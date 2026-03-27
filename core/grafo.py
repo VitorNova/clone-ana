@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 from core.tools import TOOLS
 from core.prompts import SYSTEM_PROMPT
 
-MAX_TENTATIVAS = 2
+MAX_TENTATIVAS = 3
+BACKOFF_DELAYS = [2.0, 4.0, 8.0]  # Exponencial
 TIMEZONE_OFFSET = -4  # UTC-4 (Mato Grosso)
 FALLBACK_MSG = "Desculpe, ocorreu um erro interno. Por favor, tente novamente em alguns instantes."
 ADMIN_PHONE = os.environ.get("ADMIN_PHONE")
@@ -172,10 +173,28 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
 
     redis = await get_redis_service()
 
-    # 1. Verificar pausa
+    # 1. Verificar pausa (Redis)
     if await redis.is_paused(phone):
         logger.info(f"[GRAFO:{phone}] IA pausada - ignorando")
         return
+
+    # 1b. Fail-safe: verificar fila no Supabase (DB pode estar mais atualizado que Redis)
+    try:
+        from infra.supabase import get_supabase
+        _sb = get_supabase()
+        if _sb:
+            _lead = _sb.table("ana_leads").select(
+                "current_queue_id, current_state"
+            ).eq("telefone", phone).limit(1).execute()
+            if _lead.data:
+                _queue = _lead.data[0].get("current_queue_id")
+                _state = _lead.data[0].get("current_state")
+                if _state == "human" or (_queue and int(_queue) not in (537,)):
+                    logger.info(f"[GRAFO:{phone}] Fail-safe: fila {_queue} (state={_state}) - ignorando")
+                    await redis.pause_set(phone)  # Sincronizar Redis
+                    return
+    except Exception as e:
+        logger.warning(f"[GRAFO:{phone}] Fail-safe check falhou: {e}")
 
     # 2. Combinar mensagens do buffer
     textos = [m.get("texto", "") for m in messages if m.get("texto")]
@@ -259,7 +278,7 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
     else:
         lang_messages = historico + [HumanMessage(content=texto)]
 
-    # 7. Invocar grafo com retry (phone injetado via InjectedState nas tools)
+    # 7. Invocar grafo com retry exponencial (phone injetado via InjectedState nas tools)
     result = None
     last_error = None
     for tentativa in range(MAX_TENTATIVAS):
@@ -270,9 +289,11 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
             break
         except Exception as e:
             last_error = e
-            logger.error(f"[GRAFO:{phone}] Erro tentativa {tentativa+1}: {e}")
+            logger.error(f"[GRAFO:{phone}] Erro tentativa {tentativa+1}/{MAX_TENTATIVAS}: {e}")
             if tentativa < MAX_TENTATIVAS - 1:
-                await asyncio.sleep(2)
+                delay = BACKOFF_DELAYS[tentativa]
+                logger.info(f"[GRAFO:{phone}] Retry em {delay}s...")
+                await asyncio.sleep(delay)
 
     if result is None:
         _context_extra.pop(phone, None)
