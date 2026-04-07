@@ -3,6 +3,8 @@
 Recebe eventos do Leadbox (ticket fechado, mudança de fila, mensagens)
 e controla pausa/despausa da IA via Redis.
 
+Evento NewMessage de cliente → buffer → grafo → resposta via API Leadbox.
+
 IDs Aluga-Ar (tenant 123):
   - tenant_id: 123
   - queue_ia: 537 (Ana IA)
@@ -12,25 +14,111 @@ IDs Aluga-Ar (tenant 123):
 """
 
 import asyncio
+import base64
 import logging
+import os
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import APIRouter, Request
 
-from infra.redis import get_redis_service, AGENT_ID
+from core.constants import (
+    TABLE_LEADS, TENANT_ID, IA_QUEUES, QUEUE_IA,
+)
+from infra.redis import get_redis_service
 from infra.supabase import get_supabase
+from infra.event_logger import log_event
+from infra.leadbox_client import enviar_resposta_leadbox
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# ── Config Leadbox (Aluga-Ar, tenant 123) ──
-TENANT_ID = 123
-QUEUE_IA = 537
-QUEUE_BILLING = 544
-QUEUE_MANUTENCAO = 545
 
-# Filas onde a IA responde
-IA_QUEUES = {QUEUE_IA, QUEUE_BILLING, QUEUE_MANUTENCAO}
+_buffer_initialized = False
+
+
+async def _init_buffer():
+    """Inicializa buffer com callback de processamento (lazy)."""
+    global _buffer_initialized
+    if _buffer_initialized:
+        return
+
+    from core.grafo import processar_mensagens
+    from infra.buffer import get_message_buffer
+
+    buffer = await get_message_buffer()
+    buffer.set_process_callback(processar_mensagens)
+    _buffer_initialized = True
+    logger.info("[LEADBOX] Buffer inicializado")
+
+
+def _baixar_midia_base64(media_url: str, timeout: int = 15):
+    """Baixa mídia de uma URL e retorna como base64."""
+    if not media_url:
+        return None
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.get(media_url)
+            resp.raise_for_status()
+            return base64.b64encode(resp.content).decode("utf-8")
+    except Exception as e:
+        logger.error(f"[LEADBOX] Erro ao baixar mídia: {e}", exc_info=True)
+        from infra.incidentes import registrar_incidente
+        registrar_incidente("desconhecido", "media_erro", str(e)[:300], {"url": media_url[:100]})
+        return None
+
+
+async def handle_new_message(phone: str, texto: str, nome: str, ticket_id,
+                             media_type: str = None, media_url: str = None,
+                             media_mimetype: str = None, media_name: str = None):
+    """Mensagem do cliente via Leadbox → buffer → grafo."""
+    if not texto and not media_url:
+        return {"status": "ignored", "reason": "empty_text_no_media"}
+
+    from infra.buffer import get_message_buffer
+    from infra.nodes_supabase import upsert_lead
+
+    await _init_buffer()
+
+    # Upsert lead
+    upsert_lead(phone, nome)
+
+    # Montar msg no formato padrão
+    msg_data = {
+        "telefone": phone,
+        "texto": texto,
+        "nome": nome,
+        "canal": "leadbox",
+    }
+
+    # Baixar mídia se presente
+    if media_url and media_type:
+        media_b64 = _baixar_midia_base64(media_url)
+        if media_b64:
+            if media_type == "audio":
+                msg_data["audio_base64"] = media_b64
+                msg_data["audio_mimetype"] = media_mimetype or "audio/ogg"
+                logger.info(f"[LEADBOX:{phone}] Áudio baixado ({len(media_b64)//1024}KB b64)")
+            elif media_type == "image":
+                msg_data["imagem_base64"] = media_b64
+                msg_data["imagem_mimetype"] = media_mimetype or "image/jpeg"
+                logger.info(f"[LEADBOX:{phone}] Imagem baixada ({len(media_b64)//1024}KB b64)")
+            elif media_type in ("document", "application"):
+                msg_data["documento_base64"] = media_b64
+                msg_data["documento_mimetype"] = media_mimetype or "application/pdf"
+                msg_data["documento_nome"] = media_name or ""
+                logger.info(f"[LEADBOX:{phone}] Documento baixado ({len(media_b64)//1024}KB b64)")
+            else:
+                logger.warning(f"[LEADBOX:{phone}] Tipo de mídia não suportado: {media_type}")
+        else:
+            logger.warning(f"[LEADBOX:{phone}] Falha ao baixar mídia {media_type}")
+
+    buffer = await get_message_buffer()
+    await buffer.add_message(phone, msg_data, context={"nome": nome})
+
+    desc = texto[:80] if texto else f"[{media_type}]"
+    logger.info(f"[LEADBOX:{phone}] NewMessage bufferizada: {desc}")
+    return {"status": "buffered", "event": "new_message"}
 
 
 async def handle_ticket_closed(phone: str, ticket_id):
@@ -49,7 +137,7 @@ async def handle_ticket_closed(phone: str, ticket_id):
 
     # Reset lead no Supabase
     try:
-        supabase.table("ana_leads").update({
+        supabase.table(TABLE_LEADS).update({
             "ticket_id": None,
             "current_queue_id": QUEUE_IA,
             "current_user_id": None,
@@ -59,12 +147,15 @@ async def handle_ticket_closed(phone: str, ticket_id):
             "responsavel": "AI",
         }).eq("telefone", phone).execute()
     except Exception as e:
-        logger.error(f"[LEADBOX:{phone}] Erro ao resetar lead: {e}")
+        logger.error(f"[LEADBOX:{phone}] Erro ao resetar lead: {e}", exc_info=True)
+        from infra.incidentes import registrar_incidente
+        registrar_incidente(phone, "lead_reset_erro", str(e)[:300])
 
     # Limpar pausa no Redis
     await redis.pause_clear(phone)
 
     logger.info(f"[LEADBOX:{phone}] Ticket fechado → IA reativada")
+    log_event("ticket_closed", phone)
     return {"status": "ok", "event": "ticket_closed"}
 
 
@@ -85,13 +176,30 @@ async def handle_queue_change(phone: str, queue_id: int, user_id, ticket_id):
     }
 
     if queue_id in IA_QUEUES:
-        # Fila IA → despausar
-        update_data["current_state"] = "ai"
-        update_data["paused_at"] = None
-        update_data["paused_by"] = None
-        update_data["responsavel"] = "AI"
-        await redis.pause_clear(phone)
-        logger.info(f"[LEADBOX:{phone}] Fila IA ({queue_id}) → despausado")
+        # Fila IA → despausar, MAS respeitar pausa por humano (fromMe)
+        # UpdateOnTicket na mesma fila IA NÃO deve anular pausa de humano
+        try:
+            lead_row = supabase.table(TABLE_LEADS).select(
+                "paused_by"
+            ).eq("telefone", phone).limit(1).execute()
+            paused_by = (lead_row.data[0].get("paused_by") or "") if lead_row.data else ""
+        except Exception:
+            paused_by = ""
+
+        if paused_by == "human_fromMe":
+            logger.info(f"[LEADBOX:{phone}] Fila IA ({queue_id}) mas paused_by=human_fromMe → mantém pausado")
+            # Atualizar apenas metadata (queue/ticket), não mexer na pausa
+            update_data["current_queue_id"] = queue_id
+            update_data["current_user_id"] = user_id
+            update_data["ticket_id"] = ticket_id
+        else:
+            update_data["current_state"] = "ai"
+            update_data["paused_at"] = None
+            update_data["paused_by"] = None
+            update_data["responsavel"] = "AI"
+            await redis.pause_clear(phone)
+            logger.info(f"[LEADBOX:{phone}] Fila IA ({queue_id}) → despausado")
+            log_event("unpaused", phone, queue_id=queue_id)
 
     else:
         # Fila humana com atendente humano → PAUSAR
@@ -101,12 +209,15 @@ async def handle_queue_change(phone: str, queue_id: int, user_id, ticket_id):
         update_data["responsavel"] = "Humano"
         await redis.pause_set(phone)
         logger.info(f"[LEADBOX:{phone}] Fila humana ({queue_id}, user={user_id}) → PAUSADO")
+        log_event("paused", phone, queue_id=queue_id, user_id=user_id)
 
     try:
-        supabase.table("ana_leads").update(update_data) \
+        supabase.table(TABLE_LEADS).update(update_data) \
             .eq("telefone", phone).execute()
     except Exception as e:
-        logger.error(f"[LEADBOX:{phone}] Erro ao atualizar lead: {e}")
+        logger.error(f"[LEADBOX:{phone}] Erro ao atualizar lead: {e}", exc_info=True)
+        from infra.incidentes import registrar_incidente
+        registrar_incidente(phone, "pausa_erro", str(e)[:300], {"queue_id": queue_id})
 
     return {"status": "ok", "event": "queue_change"}
 
@@ -116,7 +227,10 @@ async def leadbox_webhook(request: Request):
     """Recebe eventos do Leadbox CRM."""
     try:
         body = await request.json()
-    except Exception:
+    except Exception as e:
+        logger.warning(f"[LEADBOX] JSON inválido no webhook: {e}")
+        from infra.incidentes import registrar_incidente
+        registrar_incidente("desconhecido", "webhook_erro", f"JSON inválido: {e}")
         return {"status": "error", "reason": "invalid_json"}
 
     event_type = body.get("event") or body.get("type") or "unknown"
@@ -147,13 +261,81 @@ async def leadbox_webhook(request: Request):
     if tenant_id_payload and int(tenant_id_payload) != TENANT_ID:
         return {"status": "ignored", "reason": "wrong_tenant"}
 
-    # Ticket fechado? (3 condições)
+    # Ticket fechado? (2 condições confiáveis)
     if phone and (
         event_type == "FinishedTicket"
         or ticket_status == "closed"
-        or (event_type == "UpdateOnTicket" and queue_id is None)
     ):
         return await handle_ticket_closed(phone, ticket_id)
+
+    # NewMessage do cliente → buffer → grafo
+    if event_type == "NewMessage" and phone:
+        from_me = message.get("fromMe", False)
+        texto = (message.get("body") or "").strip()
+        nome = contact.get("name") or contact.get("pushName") or ""
+
+        if from_me:
+            # Checar se é eco da própria IA (marker Redis com TTL 15s)
+            redis = await get_redis_service()
+            agent_id = os.environ.get("AGENT_ID", "ana-langgraph")
+            marker_key = f"sent:ia:{agent_id}:{phone}"
+            is_ia_echo = await redis.client.exists(marker_key)
+
+            if is_ia_echo:
+                # Eco da IA — limpar marker e ignorar
+                await redis.client.delete(marker_key)
+                logger.info(f"[LEADBOX:{phone}] NewMessage fromMe — eco da IA, ignorando")
+                return {"status": "ok", "event": "ia_echo"}
+
+            # Se ticket está em fila da IA, fromMe é sempre da IA (billing/manutenção dispatch)
+            ticket_queue = ticket.get("queueId")
+            if ticket_queue and ticket_queue in IA_QUEUES:
+                logger.info(f"[LEADBOX:{phone}] NewMessage fromMe em fila IA ({ticket_queue}) — ignorando")
+                return {"status": "ok", "event": "ia_echo_queue"}
+
+            # Humano real respondeu → pausar IA para este lead
+            supabase = get_supabase()
+            if not await redis.is_paused(phone):
+                await redis.pause_set(phone)
+                now = datetime.now(timezone.utc).isoformat()
+                if supabase:
+                    try:
+                        supabase.table(TABLE_LEADS).update({
+                            "current_state": "human",
+                            "paused_at": now,
+                            "paused_by": "human_fromMe",
+                            "responsavel": "Humano",
+                            "updated_at": now,
+                        }).eq("telefone", phone).execute()
+                    except Exception as e:
+                        logger.error(f"[LEADBOX:{phone}] Erro ao pausar por fromMe: {e}", exc_info=True)
+                logger.info(f"[LEADBOX:{phone}] NewMessage fromMe → IA PAUSADA (humano assumiu)")
+                log_event("paused", phone, reason="human_fromMe")
+            else:
+                logger.info(f"[LEADBOX:{phone}] NewMessage fromMe — já pausado")
+            return {"status": "ok", "event": "human_takeover"}
+
+        # Extrair mídia
+        media_type = message.get("mediaType")  # "audio", "image", "document"
+        media_url = message.get("mediaUrl")
+        media_name = message.get("mediaName") or message.get("originalName") or ""
+        # Mimetype: raw.audio.mime_type / raw.image.mime_type / etc
+        raw = message.get("raw") or {}
+        if not isinstance(raw, dict):
+            raw = {}
+        raw_media = (raw.get(media_type) or {}) if media_type else {}
+        if not isinstance(raw_media, dict):
+            raw_media = {}
+        media_mimetype = raw_media.get("mime_type")
+
+        desc = texto[:80] if texto else f"[{media_type}]" if media_type else "[vazio]"
+        logger.info(f"[LEADBOX:{phone}] NewMessage: {desc}")
+
+        return await handle_new_message(
+            phone, texto, nome, ticket_id,
+            media_type=media_type, media_url=media_url,
+            media_mimetype=media_mimetype, media_name=media_name,
+        )
 
     # Mudança de fila?
     if phone and queue_id:

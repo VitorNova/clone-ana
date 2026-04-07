@@ -11,23 +11,25 @@
     "nome": "pede_boleto_sem_cpf",
     "descricao": "Lead pede boleto sem CPF — IA pede CPF (sem gastar chamada de API)",
     "mensagens": ["Quero ver meu boleto"],
+    "expect_no_tool": true,
     "expect_contains": ["CPF"],
     "expect_not_contains": ["erro"]
   },
   {
     "nome": "pede_boleto_com_cpf",
-    "descricao": "Lead pede boleto e informa CPF — IA consulta",
+    "descricao": "Lead pede boleto e informa CPF — IA consulta e tool não retorna erro",
     "mensagens": ["Quero ver meu boleto, meu CPF é 04386487109"],
     "expect_tool": "consultar_cliente",
-    "expect_contains": [],
+    "expect_no_tool_error": true,
     "expect_not_contains": ["erro", "error"]
   },
   {
     "nome": "pede_transferencia",
-    "descricao": "Lead pede humano — IA transfere sem avisar",
+    "descricao": "Lead pede humano — IA transfere sem avisar e transferência funciona",
     "mensagens": ["Quero falar com um atendente humano por favor"],
     "expect_tool": "transferir_departamento",
-    "expect_contains": [],
+    "expect_no_tool_error": true,
+    "expect_tool_result_contains": ["sucesso"],
     "expect_not_contains": ["vou transferir", "transferindo"]
   },
   {
@@ -39,10 +41,10 @@
   },
   {
     "nome": "pergunta_contrato_com_cpf",
-    "descricao": "Lead pergunta contrato + CPF — IA consulta",
+    "descricao": "Lead pergunta contrato + CPF — IA consulta e tool não retorna erro",
     "mensagens": ["Quando acaba meu contrato? CPF 04386487109"],
     "expect_tool": "consultar_cliente",
-    "expect_contains": [],
+    "expect_no_tool_error": true,
     "expect_not_contains": ["erro"]
   },
   {
@@ -51,5 +53,89 @@
     "mensagens": ["Vocês vendem ar condicionado?"],
     "expect_no_tool": true,
     "expect_not_contains": ["erro", "error"]
+  },
+  {
+    "nome": "billing_vou_pagar_depois",
+    "descricao": "Lead com disparo billing diz 'vou pagar essa semana' — IA registra compromisso",
+    "mensagens": ["vou pagar depois, essa semana eu resolvo"],
+    "context": "billing",
+    "expect_tool": "registrar_compromisso",
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["CPF", "cpf", "erro"]
+  },
+  {
+    "nome": "billing_boleto_mes_passado",
+    "descricao": "Lead com disparo billing pede boleto do mês passado — IA consulta sem pedir CPF",
+    "mensagens": ["quero o boleto do mês passado, não o desse"],
+    "context": "billing",
+    "phone": "5566996743520",
+    "expect_tool": "consultar_cliente",
+    "expect_tool_args": {"buscar_por_telefone": true},
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["CPF", "cpf"]
+  },
+  {
+    "nome": "billing_pix_sem_contexto",
+    "descricao": "Lead SEM disparo pede pix — IA pede CPF",
+    "mensagens": ["manda o pix pra mim"],
+    "expect_contains": ["CPF"],
+    "expect_not_contains": ["erro"]
+  },
+  {
+    "nome": "billing_quanto_devo",
+    "descricao": "Lead com disparo billing pergunta quanto deve — IA consulta sem pedir CPF",
+    "mensagens": ["quanto que eu devo no total?"],
+    "context": "billing",
+    "phone": "5566996743520",
+    "expect_tool": "consultar_cliente",
+    "expect_tool_args": {"buscar_por_telefone": true},
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["CPF", "cpf"]
+  },
+  {
+    "nome": "billing_recusa_pagar",
+    "descricao": "Lead com disparo billing recusa pagar — IA transfere financeiro",
+    "mensagens": ["não vou pagar não, tá caro demais isso aí"],
+    "context": "billing",
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["erro"]
+  },
+  {
+    "nome": "billing_comprovante_texto",
+    "descricao": "Lead com disparo billing diz que fez pix — IA verifica pagamento sem pedir CPF",
+    "mensagens": ["acabei de fazer o pix de R$189,90, segue comprovante"],
+    "context": "billing",
+    "phone": "5566996743520",
+    "expect_tool": "consultar_cliente",
+    "expect_tool_args": {"verificar_pagamento": true, "buscar_por_telefone": true},
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["CPF", "cpf"]
+  },
+  {
+    "nome": "manutencao_ar_pingando",
+    "descricao": "Lead com disparo manutenção relata ar pingando — IA transfere direto sem pedir CPF",
+    "mensagens": ["meu ar tá pingando água"],
+    "context": "manutencao",
+    "phone": "5566996743520",
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true
+  },
+  {
+    "nome": "manutencao_barulho_sem_contexto",
+    "descricao": "Lead SEM disparo relata barulho no ar — IA transfere direto para Nathália",
+    "mensagens": ["meu ar condicionado tá fazendo um barulho estranho"],
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true
+  },
+  {
+    "nome": "transferencia_telefone_real",
+    "descricao": "Lead com telefone real pede humano — IA transfere e Leadbox aceita (sem 404)",
+    "mensagens": ["preciso falar com alguém do atendimento"],
+    "phone": "5566996743520",
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true,
+    "expect_tool_result_contains": ["sucesso"],
+    "expect_not_contains": ["erro", "404"]
   }
 ]

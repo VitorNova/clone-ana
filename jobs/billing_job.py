@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from infra.supabase import get_supabase
+from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_ASAAS_COBRANCAS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,41 +31,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Régua de cobrança: offsets em dias úteis onde envia
-SCHEDULE = [-1, 0, 1, 3, 5, 7, 10, 15]
+SCHEDULE = [0, 1, 3, 5, 7, 10, 15]
 
-# Templates por fase
+# Templates aprovados — texto EXATO do WhatsApp, sem emoji, sem alteração
 TEMPLATES = {
-    "reminder": (
-        "Olá, {nome}! 😊\n\n"
-        "Passando para lembrar que sua mensalidade de R$ {valor} vence em {vencimento}.\n\n"
-        "Segue o link para pagamento:\n{link}\n\n"
-        "Qualquer dúvida, estou por aqui!"
-    ),
     "due_date": (
-        "Olá, {nome}!\n\n"
-        "Sua mensalidade de R$ {valor} vence hoje ({vencimento}).\n\n"
-        "Para facilitar, segue o link:\n{link}\n\n"
-        "Se já pagou, pode desconsiderar. 😊"
+        "Olá, {nome}. Sua mensalidade de R$ {valor} vence hoje ({vencimento}).\n\n"
+        "Link para pagamento: {link}\n\n"
+        "Se já efetuou o pagamento, desconsidere esta mensagem."
     ),
-    "overdue1": (
-        "Olá, {nome}.\n\n"
-        "Notamos que a mensalidade de R$ {valor} (vencida em {vencimento}) "
-        "ainda está em aberto.\n\n"
-        "Segue o link para regularizar:\n{link}\n\n"
-        "Se já pagou, me avise para verificar!"
-    ),
-    "overdue2": (
-        "Olá, {nome}.\n\n"
-        "Sua mensalidade de R$ {valor} está em atraso há {dias_atraso} dias.\n\n"
-        "Para evitar interrupção no serviço, regularize pelo link:\n{link}\n\n"
-        "Em caso de dificuldade, fale conosco."
-    ),
-    "overdue3": (
-        "{nome}, sua mensalidade de R$ {valor} (vencida em {vencimento}) "
-        "permanece em aberto há {dias_atraso} dias.\n\n"
-        "Esta é nossa última tentativa de contato antes de medidas adicionais.\n\n"
-        "Regularize aqui:\n{link}\n\n"
-        "Se precisar negociar, responda esta mensagem."
+    "overdue": (
+        "Olá, {nome}. Sua mensalidade de R$ {valor} com vencimento em {vencimento} encontra-se em aberto.\n\n"
+        "Para regularizar, acesse: {link}\n\n"
+        "Se já efetuou o pagamento, desconsidere esta mensagem.\n"
+        "Em caso de dúvida, responda aqui."
     ),
 }
 
@@ -87,15 +67,9 @@ def count_business_days(from_date: date, to_date: date) -> int:
 
 def get_template(offset: int) -> tuple:
     """Retorna (template_key, template) baseado no offset."""
-    if offset < 0:
-        return "reminder", TEMPLATES["reminder"]
     if offset == 0:
         return "due_date", TEMPLATES["due_date"]
-    if offset <= 5:
-        return "overdue1", TEMPLATES["overdue1"]
-    if offset <= 10:
-        return "overdue2", TEMPLATES["overdue2"]
-    return "overdue3", TEMPLATES["overdue3"]
+    return "overdue", TEMPLATES["overdue"]
 
 
 def buscar_elegiveis(hoje: date) -> list:
@@ -110,7 +84,7 @@ def buscar_elegiveis(hoje: date) -> list:
 
     try:
         # Cobranças PENDING (vencimento próximo)
-        pending = supabase.table("asaas_cobrancas").select(
+        pending = supabase.table(TABLE_ASAAS_COBRANCAS).select(
             "id, customer_id, value, due_date, status, invoice_url"
         ).in_(
             "status", ["PENDING", "OVERDUE"]
@@ -123,7 +97,7 @@ def buscar_elegiveis(hoje: date) -> list:
 
         # Buscar clientes para cada cobrança
         customer_ids = list({c["customer_id"] for c in pending.data})
-        clientes = supabase.table("asaas_clientes").select(
+        clientes = supabase.table(TABLE_ASAAS_CLIENTES).select(
             "id, name, mobile_phone, cpf_cnpj"
         ).in_("id", customer_ids).is_("deleted_at", "null").execute()
 
@@ -146,7 +120,6 @@ def buscar_elegiveis(hoje: date) -> list:
                 continue
 
             template_key, template = get_template(offset)
-            dias_atraso = max(0, (hoje - due).days)
 
             link = cob.get("invoice_url") or ""
             if not link:
@@ -157,7 +130,6 @@ def buscar_elegiveis(hoje: date) -> list:
                 valor=f"{cob['value']:.2f}",
                 vencimento=due.strftime("%d/%m/%Y"),
                 link=link,
-                dias_atraso=dias_atraso,
             )
 
             elegiveis.append({
@@ -209,7 +181,9 @@ async def run_billing():
                     enviados += 1
             except Exception as e:
                 erros += 1
-                logger.error(f"[BILLING] Erro: {e}")
+                logger.error(f"[BILLING] Erro: {e}", exc_info=True)
+                from infra.incidentes import registrar_incidente
+                registrar_incidente(item.get("phone", "?"), "billing_erro", str(e)[:300])
 
         logger.info(f"[BILLING] Concluído: enviados={enviados} erros={erros}")
 
@@ -219,18 +193,49 @@ async def run_billing():
 
 async def _processar_disparo(item: dict, redis) -> bool:
     """Processa um disparo: anti-duplicata -> salvar contexto -> enviar."""
-    import os
-    import httpx
+    from infra.event_logger import log_event
 
     phone = item["phone"]
     message = item["message"]
     reference_id = item["reference_id"]
     context_type = item["context_type"]
+    clean_phone = "".join(filter(str.isdigit, phone))
 
     # Verificar pausa
     if await redis.is_paused(phone):
         logger.info(f"[BILLING:{phone}] Pausado, adiando")
+        log_event("billing_skipped", phone, reason="paused")
         return False
+
+    # Verificar snooze (lead prometeu pagar em data X)
+    if await redis.is_snoozed(phone, "billing"):
+        snooze_until = await redis.snooze_get(phone, "billing")
+        logger.info(f"[BILLING:{phone}] Snooze ativo até {snooze_until}, pulando")
+        log_event("billing_skipped", phone, reason="snoozed", until=snooze_until)
+        return False
+
+    # Fallback: checar snooze no Supabase (caso Redis reiniciou)
+    try:
+        _sb = get_supabase()
+        if _sb:
+            _lead_snooze = _sb.table(TABLE_LEADS).select(
+                "billing_snooze_until"
+            ).eq("telefone", clean_phone).limit(1).execute()
+            if _lead_snooze.data:
+                snooze_db = _lead_snooze.data[0].get("billing_snooze_until")
+                if snooze_db:
+                    if date.fromisoformat(snooze_db) >= date.today():
+                        logger.info(f"[BILLING:{phone}] Snooze DB até {snooze_db}, pulando")
+                        # Restaurar no Redis
+                        await redis.snooze_set(phone, snooze_db)
+                        return False
+                    else:
+                        # Snooze expirou — limpar
+                        _sb.table(TABLE_LEADS).update(
+                            {"billing_snooze_until": None}
+                        ).eq("telefone", clean_phone).execute()
+    except Exception as e:
+        logger.warning(f"[BILLING:{phone}] Snooze DB check falhou: {e}")
 
     # Anti-duplicata
     dedup_key = f"dispatch:{phone}:{context_type}:{reference_id}:{date.today().isoformat()}"
@@ -244,12 +249,11 @@ async def _processar_disparo(item: dict, redis) -> bool:
         return False
 
     now = datetime.now(timezone.utc).isoformat()
-    clean_phone = "".join(filter(str.isdigit, phone))
 
     # Buscar lead
     lead = None
     for tel in [clean_phone, clean_phone[2:] if clean_phone.startswith("55") else f"55{clean_phone}"]:
-        result = supabase.table("ana_leads").select(
+        result = supabase.table(TABLE_LEADS).select(
             "id, conversation_history"
         ).eq("telefone", tel).limit(1).execute()
         if result.data:
@@ -258,10 +262,10 @@ async def _processar_disparo(item: dict, redis) -> bool:
 
     if not lead:
         # Criar lead se não existe
-        from infra.persistencia import upsert_lead
+        from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
-            result = supabase.table("ana_leads").select(
+            result = supabase.table(TABLE_LEADS).select(
                 "id, conversation_history"
             ).eq("id", lead_id).limit(1).execute()
             if result.data:
@@ -281,37 +285,32 @@ async def _processar_disparo(item: dict, redis) -> bool:
         "reference_id": reference_id,
     })
 
-    supabase.table("ana_leads").update({
+    supabase.table(TABLE_LEADS).update({
         "conversation_history": history,
         "updated_at": now,
     }).eq("id", lead["id"]).execute()
 
-    # Enviar via UAZAPI
-    uazapi_url = os.environ.get("UAZAPI_URL", "").rstrip("/")
-    uazapi_token = os.environ.get("UAZAPI_TOKEN", "")
-    if not uazapi_url or not uazapi_token:
-        logger.error(f"[BILLING:{phone}] UAZAPI não configurada")
-        return False
+    # Enviar via Leadbox
+    from infra.leadbox_client import enviar_resposta_leadbox
 
     tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
 
-    try:
-        with httpx.Client(timeout=15) as client:
-            resp = client.post(
-                f"{uazapi_url}/send/text",
-                headers={"token": uazapi_token, "Content-Type": "application/json"},
-                json={"number": tel_envio, "text": message, "delay": 0},
-            )
-            resp.raise_for_status()
-    except Exception as e:
-        logger.error(f"[BILLING:{phone}] UAZAPI erro: {e}")
+    if not enviar_resposta_leadbox(tel_envio, message, raw=True):
+        logger.error(f"[BILLING:{phone}] Leadbox erro ao enviar")
+        log_event("billing_error", phone, reason="leadbox_send_failed", template=item.get("template_key"))
         # Contexto já salvo, lead vai ter contexto quando responder
         await redis.client.set(dedup_key, "1", ex=86400)
         return False
 
+    # Mover ticket para fila de cobranças (544, IA user 1095)
+    from infra.leadbox_client import mover_para_fila
+    from core.constants import QUEUE_BILLING
+    mover_para_fila(tel_envio, queue_id=QUEUE_BILLING, user_id=1095)
+
     # Marcar anti-duplicata (24h)
     await redis.client.set(dedup_key, "1", ex=86400)
     logger.info(f"[BILLING:{phone}] Enviado ({item['template_key']}, offset={item['offset']})")
+    log_event("billing_sent", phone, template=item.get("template_key"), offset=item.get("offset"), ref=reference_id)
     return True
 
 

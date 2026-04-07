@@ -103,6 +103,7 @@ REGRAS PARA ESTE CONTEXTO:
 - O link de pagamento já foi enviado na mensagem anterior do histórico — se pedir Pix/link, reenvie o link REAL que aparece lá
 - Se quiser negociar → transfira para financeiro
 - Se tiver dúvida sobre valor → use consultar_cliente com buscar_por_telefone=true
+- Se prometer pagar em uma data ("vou pagar sexta", "pago amanhã", "essa semana") → use `registrar_compromisso` com a data em YYYY-MM-DD para silenciar cobranças até lá. Converta a fala do lead para data ISO real.
 """
 
     if context_type == "manutencao":
@@ -111,11 +112,12 @@ O cliente recebeu aviso de manutenção preventiva (contrato: {reference_id or '
 Ele está respondendo sobre AGENDAMENTO DE MANUTENÇÃO.
 
 REGRAS PARA ESTE CONTEXTO:
-- NÃO peça CPF — se precisar consultar, use consultar_cliente com buscar_por_telefone=true
-- Pergunte dia e horário de preferência para a visita técnica
+- NÃO peça CPF — o lead já está identificado
+- Se o cliente mencionar DEFEITO (ar fazendo barulho, pingando, não gelando, parou, quebrado, não liga, não esfria, vazando) → use `transferir_departamento` para Atendimento/Nathália (queue_id: 453, user_id: 815) IMEDIATAMENTE. NÃO peça CPF, NÃO use consultar_cliente. Apenas transfira. Defeito NÃO é manutenção preventiva.
+- Se NÃO for defeito → pergunte dia e horário de preferência para a visita técnica
 - Se quiser reagendar → pergunte novo dia/horário
-- Se quiser cancelar → transfira para atendimento
-- Manutenção é GRATUITA (inclusa no contrato)
+- Se RECUSAR a manutenção ("não preciso", "não quero", "tá tudo ok", "não") → use `transferir_departamento` para Atendimento/Nathália (queue_id: 453, user_id: 815) IMEDIATAMENTE, sem insistir. A empresa precisa registrar a recusa.
+- Manutenção preventiva é GRATUITA (inclusa no contrato)
 """
 
     return ""

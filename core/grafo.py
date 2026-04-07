@@ -10,7 +10,6 @@ Uso:
     2. O buffer chama processar_mensagens(phone, messages, context) como callback
 """
 
-import asyncio
 import json as _json
 import logging
 import os
@@ -29,12 +28,10 @@ logger = logging.getLogger(__name__)
 from core.tools import TOOLS
 from core.prompts import SYSTEM_PROMPT
 
-MAX_TENTATIVAS = 3
-BACKOFF_DELAYS = [2.0, 4.0, 8.0]  # Exponencial
 TIMEZONE_OFFSET = -4  # UTC-4 (Mato Grosso)
 
-# Filas onde a IA responde (537=IA genérica, 544=billing, 545=manutenção)
-IA_QUEUES = {537, 544, 545}
+# Filas onde a IA responde (importado de constants)
+from core.constants import IA_QUEUES, TABLE_LEADS
 FALLBACK_MSG = "Desculpe, ocorreu um erro interno. Por favor, tente novamente em alguns instantes."
 ADMIN_PHONE = os.environ.get("ADMIN_PHONE")
 
@@ -53,9 +50,8 @@ class State(TypedDict):
 # MODEL
 # =============================================================================
 
-def get_model():
-    """Instancia Gemini com tools vinculadas."""
-    import os
+def _build_model():
+    """Instancia Gemini com tools vinculadas (chamado 1x)."""
     from google.ai.generativelanguage_v1beta.types import HarmCategory, SafetySetting
 
     llm = ChatGoogleGenerativeAI(
@@ -72,6 +68,17 @@ def get_model():
         },
     )
     return llm.bind_tools(TOOLS) if TOOLS else llm
+
+
+_model = None
+
+
+def get_model():
+    """Retorna singleton do modelo (lazy init)."""
+    global _model
+    if _model is None:
+        _model = _build_model()
+    return _model
 
 
 # =============================================================================
@@ -142,8 +149,8 @@ graph = build_graph()
 # =============================================================================
 
 def _notificar_erro(phone: str, erro: Exception):
-    """Log estruturado + WhatsApp para admin."""
-    from infra.persistencia import enviar_resposta
+    """Log estruturado + notificação para admin via Leadbox."""
+    from infra.leadbox_client import enviar_resposta_leadbox
 
     erro_info = {
         "event": "graph_invoke_failed",
@@ -156,7 +163,7 @@ def _notificar_erro(phone: str, erro: Exception):
 
     if ADMIN_PHONE:
         try:
-            enviar_resposta(
+            enviar_resposta_leadbox(
                 ADMIN_PHONE,
                 f"[ERRO IA] Lead {phone}: {type(erro).__name__}: {str(erro)[:200]}",
             )
@@ -180,7 +187,8 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
         context: Contexto opcional (nome, lead_id, mídia)
     """
     from infra.redis import get_redis_service
-    from infra.persistencia import buscar_historico, salvar_mensagem, salvar_mensagens_agente, enviar_resposta
+    from infra.nodes_supabase import buscar_historico, salvar_mensagem, salvar_mensagens_agente
+    from infra.event_logger import log_event
 
     redis = await get_redis_service()
 
@@ -194,7 +202,7 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
         from infra.supabase import get_supabase
         _sb = get_supabase()
         if _sb:
-            _lead = _sb.table("ana_leads").select(
+            _lead = _sb.table(TABLE_LEADS).select(
                 "current_queue_id, current_state"
             ).eq("telefone", phone).limit(1).execute()
             if _lead.data:
@@ -244,6 +252,8 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
     if not texto and not has_media:
         return
 
+    log_event("msg_received", phone, text=texto[:100] if texto else "[media]")
+
     # 3. Buscar histórico
     historico = buscar_historico(phone, limite=20)
 
@@ -258,7 +268,7 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
 
         supabase = get_supabase()
         if supabase:
-            ctx_result = supabase.table("ana_leads").select(
+            ctx_result = supabase.table(TABLE_LEADS).select(
                 "conversation_history"
             ).eq("telefone", phone).limit(1).execute()
 
@@ -268,8 +278,11 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
                 if context_type:
                     _context_extra[phone] = build_context_prompt(context_type, reference_id)
                     logger.info(f"[GRAFO:{phone}] Contexto injetado: {context_type}")
+                    log_event("context_detected", phone, context=context_type, ref=reference_id)
     except Exception as e:
-        logger.warning(f"[GRAFO:{phone}] Erro ao detectar contexto: {e}")
+        logger.error(f"[GRAFO:{phone}] Erro ao detectar contexto: {e}", exc_info=True)
+        from infra.incidentes import registrar_incidente
+        registrar_incidente(phone, "contexto_falhou", str(e)[:300])
 
     # 6. Construir mensagens LangChain
     if imagem_base64:
@@ -297,25 +310,18 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
         lang_messages = historico + [HumanMessage(content=texto)]
 
     # 7. Invocar grafo com retry exponencial (phone injetado via InjectedState nas tools)
-    result = None
-    last_error = None
-    for tentativa in range(MAX_TENTATIVAS):
-        try:
-            result = await graph.ainvoke(
-                {"messages": lang_messages, "phone": phone},
-            )
-            break
-        except Exception as e:
-            last_error = e
-            logger.error(f"[GRAFO:{phone}] Erro tentativa {tentativa+1}/{MAX_TENTATIVAS}: {e}")
-            if tentativa < MAX_TENTATIVAS - 1:
-                delay = BACKOFF_DELAYS[tentativa]
-                logger.info(f"[GRAFO:{phone}] Retry em {delay}s...")
-                await asyncio.sleep(delay)
+    from infra.retry import invocar_com_retry
+    result, last_error = await invocar_com_retry(
+        graph, {"messages": lang_messages, "phone": phone}, phone=phone,
+    )
 
     if result is None:
         _context_extra.pop(phone, None)
-        enviar_resposta(phone, FALLBACK_MSG)
+        from infra.leadbox_client import enviar_resposta_leadbox
+        from infra.incidentes import registrar_incidente
+        enviar_resposta_leadbox(phone, FALLBACK_MSG)
+        log_event("error", phone, error=str(last_error)[:200] if last_error else "no_result")
+        registrar_incidente(phone, "gemini_falhou", str(last_error)[:500] if last_error else "no_result")
         if last_error:
             _notificar_erro(phone, last_error)
         return
@@ -358,10 +364,44 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
                 resposta = content.strip()
                 break
 
+    # Logar tool calls e resposta
+    for msg in novas_mensagens:
+        if isinstance(msg, AIMessage) and msg.tool_calls:
+            for tc in msg.tool_calls:
+                log_event("tool_call", phone, tool=tc["name"], args={k: str(v)[:50] for k, v in tc.get("args", {}).items()})
+    if resposta:
+        log_event("response", phone, text=resposta[:150], tokens=usage.get("total", 0))
+
+    # Detectar hallucination: Ana diz que fez mas não chamou a tool
+    from core.hallucination import detectar_hallucination
+    hall_tools = detectar_hallucination(novas_mensagens, phone)
+    for tool_name in hall_tools:
+        logger.warning(f"[GRAFO:{phone}] HALLUCINATION: Ana NÃO chamou {tool_name}")
+        log_event("hallucination", phone, tool=tool_name, text=resposta[:100] if resposta else "")
+        from infra.incidentes import registrar_incidente
+        registrar_incidente(phone, "hallucination", f"Não chamou {tool_name}", {"tool": tool_name, "resposta": (resposta or "")[:200]})
+        if ADMIN_PHONE:
+            from infra.leadbox_client import enviar_resposta_leadbox
+            try:
+                enviar_resposta_leadbox(
+                    ADMIN_PHONE,
+                    f"HALLUCINATION: Lead {phone[-4:]} — NÃO chamou {tool_name}",
+                )
+            except Exception:
+                pass
+
+    # Auto-snooze 48h: se era contexto billing e Ana NÃO transferiu, silencia disparos
+    from core.auto_snooze import auto_snooze_billing
+    ctx_extra = _context_extra.get(phone, "")
+    await auto_snooze_billing(phone, ctx_extra, novas_mensagens, redis)
+
     # Limpar cache de contexto
     _context_extra.pop(phone, None)
 
+    # Enviar resposta via Leadbox
+    from infra.leadbox_client import enviar_resposta_leadbox
+
     if resposta:
-        enviar_resposta(phone, resposta, agent_name="Ana")
+        enviar_resposta_leadbox(phone, resposta)
     else:
-        enviar_resposta(phone, FALLBACK_MSG)
+        enviar_resposta_leadbox(phone, FALLBACK_MSG)

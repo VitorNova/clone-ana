@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from infra.supabase import get_supabase
+from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,7 +50,7 @@ def buscar_contratos_d7(hoje: date) -> list:
     data_alvo = (hoje + timedelta(days=7)).isoformat()
 
     try:
-        result = supabase.table("contract_details").select(
+        result = supabase.table(TABLE_CONTRACT_DETAILS).select(
             "id, customer_id, locatario_nome, locatario_telefone, "
             "equipamentos, endereco_instalacao, proxima_manutencao, "
             "maintenance_status"
@@ -73,7 +74,7 @@ def buscar_contratos_d7(hoje: date) -> list:
             if not phone:
                 customer_id = contrato.get("customer_id")
                 if customer_id:
-                    cliente = supabase.table("asaas_clientes").select(
+                    cliente = supabase.table(TABLE_ASAAS_CLIENTES).select(
                         "mobile_phone"
                     ).eq("id", customer_id).limit(1).execute()
                     if cliente.data:
@@ -148,7 +149,9 @@ async def run_manutencao():
                     enviados += 1
             except Exception as e:
                 erros += 1
-                logger.error(f"[MANUTENCAO] Erro: {e}")
+                logger.error(f"[MANUTENCAO] Erro: {e}", exc_info=True)
+                from infra.incidentes import registrar_incidente
+                registrar_incidente(item.get("phone", "?"), "manutencao_erro", str(e)[:300], {"contract_id": item.get("contract_id")})
 
         logger.info(f"[MANUTENCAO] Concluído: enviados={enviados} erros={erros}")
 
@@ -158,8 +161,7 @@ async def run_manutencao():
 
 async def _processar_notificacao(item: dict, redis) -> bool:
     """Processa uma notificação de manutenção."""
-    import os
-    import httpx
+    from infra.event_logger import log_event
 
     phone = item["phone"]
     message = item["message"]
@@ -187,7 +189,7 @@ async def _processar_notificacao(item: dict, redis) -> bool:
     # Buscar lead
     lead = None
     for tel in [clean_phone, clean_phone[2:] if clean_phone.startswith("55") else f"55{clean_phone}"]:
-        result = supabase.table("ana_leads").select(
+        result = supabase.table(TABLE_LEADS).select(
             "id, conversation_history"
         ).eq("telefone", tel).limit(1).execute()
         if result.data:
@@ -195,10 +197,10 @@ async def _processar_notificacao(item: dict, redis) -> bool:
             break
 
     if not lead:
-        from infra.persistencia import upsert_lead
+        from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
-            result = supabase.table("ana_leads").select(
+            result = supabase.table(TABLE_LEADS).select(
                 "id, conversation_history"
             ).eq("id", lead_id).limit(1).execute()
             if result.data:
@@ -218,43 +220,33 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         "contract_id": contract_id,
     })
 
-    supabase.table("ana_leads").update({
+    supabase.table(TABLE_LEADS).update({
         "conversation_history": history,
         "updated_at": now,
     }).eq("id", lead["id"]).execute()
 
     # Marcar contrato como notificado
     try:
-        supabase.table("contract_details").update({
+        supabase.table(TABLE_CONTRACT_DETAILS).update({
             "maintenance_status": "notified",
             "notificacao_enviada_at": now,
         }).eq("id", contract_id).execute()
     except Exception as e:
         logger.warning(f"[MANUTENCAO:{phone}] Erro ao marcar contrato: {e}")
 
-    # Enviar via UAZAPI
-    uazapi_url = os.environ.get("UAZAPI_URL", "").rstrip("/")
-    uazapi_token = os.environ.get("UAZAPI_TOKEN", "")
-    if not uazapi_url or not uazapi_token:
-        return False
+    # Enviar via Leadbox
+    from infra.leadbox_client import enviar_resposta_leadbox
 
     tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
 
-    try:
-        with httpx.Client(timeout=15) as client:
-            resp = client.post(
-                f"{uazapi_url}/send/text",
-                headers={"token": uazapi_token, "Content-Type": "application/json"},
-                json={"number": tel_envio, "text": message, "delay": 0},
-            )
-            resp.raise_for_status()
-    except Exception as e:
-        logger.error(f"[MANUTENCAO:{phone}] UAZAPI erro: {e}")
+    if not enviar_resposta_leadbox(tel_envio, message, raw=True):
+        logger.error(f"[MANUTENCAO:{phone}] Leadbox erro ao enviar")
         await redis.client.set(dedup_key, "1", ex=86400)
         return False
 
     await redis.client.set(dedup_key, "1", ex=86400)
     logger.info(f"[MANUTENCAO:{phone}] Notificação D-7 enviada (contrato={contract_id})")
+    log_event("manutencao_sent", phone, contract_id=contract_id)
     return True
 
 
