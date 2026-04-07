@@ -156,7 +156,6 @@ TABLE_LEADS = "ana_leads"
 TABLE_ASAAS_CLIENTES = "asaas_clientes"
 TABLE_ASAAS_COBRANCAS = "asaas_cobrancas"
 TABLE_ASAAS_CONTRATOS = "asaas_contratos"
-TABLE_BILLING_NOTIFICATIONS = "billing_notifications"
 TABLE_CONTRACT_DETAILS = "contract_details"
 TENANT_ID = 123
 QUEUE_IA = 537

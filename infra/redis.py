@@ -114,6 +114,40 @@ class RedisService:
     async def is_paused(self, phone: str) -> bool:
         return await self.client.exists(self._pause_key(phone)) > 0
 
+    # ── Snooze (billing) ──
+
+    def _snooze_key(self, phone: str, context_type: str = "billing") -> str:
+        return f"snooze:{context_type}:{AGENT_ID}:{phone}"
+
+    async def snooze_set(self, phone: str, until_date: str, context_type: str = "billing"):
+        """Seta snooze: silencia disparos até until_date (ISO YYYY-MM-DD).
+
+        TTL calculado automaticamente: (until_date - hoje + 1 dia de margem).
+        """
+        from datetime import date, timedelta
+        key = self._snooze_key(phone, context_type)
+        target = date.fromisoformat(until_date)
+        today = date.today()
+        days_until = (target - today).days + 1  # +1 dia de margem
+        ttl = max(days_until * 86400, 86400)  # mínimo 24h
+        await self.client.set(key, until_date, ex=ttl)
+        logger.info(f"[REDIS] Snooze {context_type}:{phone} até {until_date} (TTL {days_until}d)")
+
+    async def snooze_get(self, phone: str, context_type: str = "billing") -> str:
+        """Retorna data do snooze ou None."""
+        return await self.client.get(self._snooze_key(phone, context_type))
+
+    async def is_snoozed(self, phone: str, context_type: str = "billing") -> bool:
+        """Verifica se phone está em snooze ATIVO (data >= hoje)."""
+        from datetime import date
+        val = await self.client.get(self._snooze_key(phone, context_type))
+        if not val:
+            return False
+        try:
+            return date.fromisoformat(val) >= date.today()
+        except ValueError:
+            return False
+
     # ── Context ──
 
     async def save_context(self, phone: str, context: dict, ttl: int = DEFAULT_TTL_SECONDS):

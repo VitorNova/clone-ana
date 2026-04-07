@@ -28,8 +28,6 @@ from core.constants import (
 from infra.redis import get_redis_service
 from infra.supabase import get_supabase
 from infra.event_logger import log_event
-from infra.leadbox_client import enviar_resposta_leadbox
-
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -235,6 +233,17 @@ async def leadbox_webhook(request: Request):
 
     event_type = body.get("event") or body.get("type") or "unknown"
 
+    # ⛔ CAPTURA: salvar TODOS os webhooks raw — antes de qualquer filtro
+    try:
+        import json as _json
+        from pathlib import Path
+        debug_file = Path("/var/www/ana-langgraph/logs/webhook_payloads.jsonl")
+        debug_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(debug_file, "a", encoding="utf-8") as f:
+            f.write(_json.dumps({"ts": datetime.now(timezone.utc).isoformat(), "raw": body}, default=str, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
     # Filtrar eventos irrelevantes
     if event_type in {"AckMessage", "FinishedTicketHistoricMessages"}:
         return {"status": "ignored"}
@@ -256,6 +265,11 @@ async def leadbox_webhook(request: Request):
         f"[LEADBOX] event={event_type} phone={phone} queue={queue_id} "
         f"user={user_id} ticket={ticket_id} tenant={tenant_id_payload}"
     )
+
+    # ⛔ KILL SWITCH — mensagem do cliente chega, loga, mas não processa
+    if event_type == "NewMessage" and not message.get("fromMe", False):
+        logger.warning(f"[LEADBOX:{phone}] KILL SWITCH — msg cliente bloqueada antes da IA")
+        return {"status": "ok", "event": "kill_switch"}
 
     # Filtrar por tenant
     if tenant_id_payload and int(tenant_id_payload) != TENANT_ID:
