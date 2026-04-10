@@ -1,0 +1,816 @@
+{
+  "flow_name": "tool_calls_esperados",
+  "data": "2026-04-10",
+  "total": 8,
+  "pass": 5,
+  "fail": 3,
+  "cenarios": [
+    {
+      "id": "TC1",
+      "nome": "Defeito — ar pingando água → transfere Nathália",
+      "status": "PASS",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Defeito — ar pingando água → transfere Nathália",
+          "dados": {
+            "mensagem": "Meu ar tá pingando água",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 815,
+                      "queue_id": 453
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 453 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 815,
+                  "queue_id": 453
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"815\", queue_id=\"453\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=453",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=815",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "PASS",
+          "dados": {
+            "resultado": "PASS",
+            "tempo_ms": 1470
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC2",
+      "nome": "Cancelamento — quero cancelar contrato → transfere Nathália",
+      "status": "FAIL",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Cancelamento — quero cancelar contrato → transfere Nathália",
+          "dados": {
+            "mensagem": "Quero cancelar meu contrato",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "transferir_departamento(queue_id=453, user_id=815)",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "transferir_departamento(queue_id=453, user_id=815)",
+            "tool_calls": [],
+            "tool_calls_str": "nenhuma"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "FAIL",
+                "detalhe": "chamadas: []"
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "FAIL",
+          "dados": {
+            "resultado": "FAIL",
+            "tempo_ms": 722
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC3",
+      "nome": "Pagamento — já paguei → transfere Financeiro (sem CPF)",
+      "status": "PASS",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Pagamento — já paguei → transfere Financeiro (sem CPF)",
+          "dados": {
+            "mensagem": "Já paguei o boleto",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 814,
+                      "queue_id": 454
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 454 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 814,
+                  "queue_id": 454
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"814\", queue_id=\"454\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=454",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=814",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'CPF'",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'cpf'",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "PASS",
+          "dados": {
+            "resultado": "PASS",
+            "tempo_ms": 2367
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC4",
+      "nome": "Cobertura — Goiânia → transfere Nathália (sem negar)",
+      "status": "FAIL",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Cobertura — Goiânia → transfere Nathália (sem negar)",
+          "dados": {
+            "mensagem": "Vocês atendem em Goiânia?",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "Não atendemos em Goiânia. Para dúvidas sobre nossa área de cobertura, vou te transferir para o Atendimento, ok?",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "Não atendemos em Goiânia. Para dúvidas sobre nossa área de cobertura, vou te transferir para o Atendimento, ok?",
+            "tool_calls": [],
+            "tool_calls_str": "nenhuma"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "FAIL",
+                "detalhe": "chamadas: []"
+              },
+              {
+                "criterio": "NÃO contém 'não atendemos'",
+                "status": "FAIL",
+                "detalhe": "presente na resposta"
+              },
+              {
+                "criterio": "NÃO contém 'não cobrimos'",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'infelizmente'",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "FAIL",
+          "dados": {
+            "resultado": "FAIL",
+            "tempo_ms": 820
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC5",
+      "nome": "Humano — quero falar com pessoa → transfere Nathália",
+      "status": "PASS",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Humano — quero falar com pessoa → transfere Nathália",
+          "dados": {
+            "mensagem": "Quero falar com uma pessoa",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 815,
+                      "queue_id": 453
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 453 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 815,
+                  "queue_id": 453
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"815\", queue_id=\"453\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=453",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=815",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "PASS",
+          "dados": {
+            "resultado": "PASS",
+            "tempo_ms": 1199
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC6",
+      "nome": "Recusa pagar — não vou pagar → transfere Lázaro",
+      "status": "PASS",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Recusa pagar — não vou pagar → transfere Lázaro",
+          "dados": {
+            "mensagem": "Não vou pagar esse boleto",
+            "contexto": "nenhum"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 813,
+                      "queue_id": 453
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 453 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 813,
+                  "queue_id": 453
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"813\", queue_id=\"453\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=453",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=813",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "PASS",
+          "dados": {
+            "resultado": "PASS",
+            "tempo_ms": 1311
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC7",
+      "nome": "Billing — fiz o pix (contexto billing) → transfere Financeiro",
+      "status": "PASS",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Billing — fiz o pix (contexto billing) → transfere Financeiro",
+          "dados": {
+            "mensagem": "Fiz o pix agora",
+            "contexto": "billing"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+                "tool_calls": []
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 814,
+                      "queue_id": 454
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 454 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 814,
+                  "queue_id": 454
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"814\", queue_id=\"454\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=454",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=814",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'CPF'",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'cpf'",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'verificar'",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "PASS",
+          "dados": {
+            "resultado": "PASS",
+            "tempo_ms": 1230
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC8",
+      "nome": "Manutenção — ar parou (contexto manutenção) → transfere Nathália",
+      "status": "FAIL",
+      "nos": [
+        {
+          "id": 1,
+          "tipo": "INPUT",
+          "label": "Manutenção — ar parou (contexto manutenção) → transfere Nathália",
+          "dados": {
+            "mensagem": "O ar parou de funcionar",
+            "contexto": "manutencao"
+          }
+        },
+        {
+          "id": 2,
+          "tipo": "GRAFO",
+          "label": "Invocação graph.ainvoke()",
+          "dados": {
+            "modelo": "gemini-2.0-flash"
+          }
+        },
+        {
+          "id": 3,
+          "tipo": "OUTPUT_IA",
+          "label": "O que o modelo retornou",
+          "dados": {
+            "raw_messages": [
+              {
+                "type": "ai",
+                "content": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+                "tool_calls": []
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [
+                  {
+                    "name": "transferir_departamento",
+                    "args": {
+                      "user_id": 815,
+                      "queue_id": 453
+                    }
+                  }
+                ],
+                "finish_reason": "STOP"
+              },
+              {
+                "type": "tool",
+                "name": "transferir_departamento",
+                "content": "Transferido para fila 453 com sucesso"
+              },
+              {
+                "type": "ai",
+                "content": "",
+                "tool_calls": [],
+                "finish_reason": "STOP"
+              }
+            ],
+            "content": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+            "tool_calls": [
+              {
+                "name": "transferir_departamento",
+                "args": {
+                  "user_id": 815,
+                  "queue_id": 453
+                }
+              }
+            ],
+            "tool_calls_str": "transferir_departamento(user_id=\"815\", queue_id=\"453\")"
+          }
+        },
+        {
+          "id": 4,
+          "tipo": "VALIDACAO",
+          "label": "Checagens",
+          "dados": {
+            "criterios": [
+              {
+                "criterio": "tool:transferir_departamento chamada",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg queue_id=453",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "arg user_id=815",
+                "status": "PASS",
+                "detalhe": ""
+              },
+              {
+                "criterio": "NÃO contém 'agendar'",
+                "status": "FAIL",
+                "detalhe": "presente na resposta"
+              },
+              {
+                "criterio": "NÃO contém 'preventiva'",
+                "status": "FAIL",
+                "detalhe": "presente na resposta"
+              },
+              {
+                "criterio": "NÃO contém 'limpeza'",
+                "status": "PASS",
+                "detalhe": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "tipo": "RESULTADO",
+          "label": "FAIL",
+          "dados": {
+            "resultado": "FAIL",
+            "tempo_ms": 1192
+          }
+        }
+      ]
+    }
+  ]
+}
