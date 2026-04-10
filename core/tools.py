@@ -104,8 +104,8 @@ def consultar_cliente(
 
     # Contratos ativos
     contratos = supabase.table("asaas_contratos").select(
-        "descricao, valor_mensal, data_inicio, data_fim"
-    ).eq("customer_id", customer_id).eq("status", "active").limit(5).execute()
+        "description, value, next_due_date, qtd_ars"
+    ).eq("customer_id", customer_id).eq("status", "ACTIVE").limit(5).execute()
 
     resp = f"Cliente: {customer_data.get('name', '?')}\nCPF: {customer_data.get('cpf_cnpj', '?')}\n\n"
 
@@ -124,7 +124,7 @@ def consultar_cliente(
     if cts:
         resp += f"\n{len(cts)} contrato(s) ativo(s):\n"
         for ct in cts:
-            resp += f"- {ct.get('descricao', '?')} | R$ {ct.get('valor_mensal', 0):.2f}/mês\n"
+            resp += f"- {ct.get('description', '?')} | R$ {ct.get('value', 0):.2f}/mês | {ct.get('qtd_ars', '?')} ar(es)\n"
 
     if verificar_pagamento:
         limite = (date.today() - timedelta(days=30)).isoformat()
@@ -192,9 +192,58 @@ def transferir_departamento(
                 },
             )
             resp.raise_for_status()
+        # Marker anti-eco: sinaliza que este fromMe é da IA
+        from infra.leadbox_client import _mark_sent_by_ia
+        _mark_sent_by_ia(telefone_limpo)
         return f"Transferido para fila {queue_id} com sucesso"
     except Exception as e:
+        logger.error(f"[TOOL] Falha ao transferir {phone} → fila {queue_id}: {e}", exc_info=True)
+        from infra.incidentes import registrar_incidente
+        registrar_incidente(phone, "transferencia_falhou", str(e)[:300], {"queue_id": queue_id, "user_id": user_id})
         return f"Erro ao transferir: {e}"
 
 
-TOOLS = [consultar_cliente, transferir_departamento]
+@tool
+def registrar_compromisso(
+    data_prometida: str,
+    phone: Annotated[str, InjectedState("phone")] = "",
+) -> str:
+    """Registra que o lead prometeu pagar em uma data específica.
+    Silencia cobranças automáticas até a data + 1 dia útil.
+
+    Use SEMPRE que o lead disser que vai pagar em um dia específico.
+    Exemplos: "vou pagar sexta", "pago amanhã", "resolvo essa semana".
+
+    Args:
+        data_prometida: Data em formato ISO YYYY-MM-DD. Converta a fala do lead para a data real.
+                        Ex: se hoje é quarta 04/04 e lead diz "sexta" → "2026-04-06".
+                        Se lead diz "amanhã" → data de amanhã.
+                        Se lead diz "essa semana" → próxima sexta-feira.
+    """
+    try:
+        target = date.fromisoformat(data_prometida)
+    except (ValueError, TypeError):
+        return f"Data inválida: '{data_prometida}'. Use formato YYYY-MM-DD."
+
+    hoje = date.today()
+    if target < hoje:
+        return f"Data {data_prometida} já passou. Compromisso não registrado."
+
+    if (target - hoje).days > 30:
+        return f"Data muito distante ({data_prometida}). Máximo 30 dias."
+
+    supabase = _get_supabase()
+    if supabase and phone:
+        try:
+            phone_clean = re.sub(r'\D', '', phone)
+            supabase.table(TABLE_LEADS).update({
+                "billing_snooze_until": data_prometida,
+            }).eq("telefone", phone_clean).execute()
+        except Exception as e:
+            logger.warning(f"[TOOL] Erro ao salvar snooze no Supabase: {e}")
+
+    dias = (target - hoje).days
+    return f"Compromisso registrado: cobranças automáticas silenciadas até {data_prometida} ({dias} dias)."
+
+
+TOOLS = [consultar_cliente, transferir_departamento, registrar_compromisso]
