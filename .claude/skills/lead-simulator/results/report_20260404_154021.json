@@ -1,0 +1,489 @@
+{
+  "timestamp": "2026-04-04T18:40:21.626335+00:00",
+  "total": 13,
+  "passed": 11,
+  "failed": 2,
+  "results": [
+    {
+      "scenario_id": "M1",
+      "scenario_name": "Manutenção — lead responde com dia/hora",
+      "mensagem": "Pode ser segunda de manhã",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Perfeito! Qual horário seria melhor para você na segunda?",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1531,
+      "error": ""
+    },
+    {
+      "scenario_id": "M2",
+      "scenario_name": "Manutenção — confirma dia/hora → transfere humano",
+      "mensagem": "Isso, pode transferir",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 815,
+            "queue_id": 453
+          }
+        }
+      ],
+      "resposta": "Segunda às 9h, anotado! Vou transferir para o atendimento confirmar a visita. Posso transferir?",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1191,
+      "error": ""
+    },
+    {
+      "scenario_id": "M3",
+      "scenario_name": "Manutenção — lead recusa",
+      "mensagem": "Não preciso de manutenção, tá tudo ok",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Entendi. Sem problemas! Se precisar reagendar depois, é só me avisar.",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 607,
+      "error": ""
+    },
+    {
+      "scenario_id": "M4",
+      "scenario_name": "Manutenção — pergunta se é pago",
+      "mensagem": "Quanto custa a manutenção?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "A manutenção preventiva é gratuita, já está inclusa no seu contrato. Qual dia e horário seria melhor para você?",
+      "validations": [
+        {
+          "name": "Resposta contém algum de ['gratuita', 'inclusa', 'grátis', 'sem custo', 'gratuito', 'incluso']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 748,
+      "error": ""
+    },
+    {
+      "scenario_id": "M5",
+      "scenario_name": "Manutenção — fluxo completo 5 turnos (dia + hora + endereço → transfere)",
+      "mensagem": "tá bom, pode confirmar com o pessoal",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 815,
+            "queue_id": 453
+          }
+        }
+      ],
+      "resposta": "Perfeito! Segunda às 9h na Rua das Flores, 123. Vou transferir para o atendimento agendar a visita. Posso transferir?",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1108,
+      "error": ""
+    },
+    {
+      "scenario_id": "M6",
+      "scenario_name": "Manutenção — lead diz só 'sim' ao disparo → pergunta dia/hora",
+      "mensagem": "sim",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Perfeito! Qual o melhor dia e horário pra você?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 583,
+      "error": ""
+    },
+    {
+      "scenario_id": "M7",
+      "scenario_name": "Manutenção — lead quer reagendar (muda o dia)",
+      "mensagem": "não vai dar segunda, pode ser quarta de manhã?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Sem problema! Quarta de manhã, que horas?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['transferir_departamento'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 679,
+      "error": ""
+    },
+    {
+      "scenario_id": "M8",
+      "scenario_name": "Manutenção — lead muda assunto para cobrança → consulta por telefone",
+      "mensagem": "ah, aproveita e me manda o boleto do mês",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Para te enviar o boleto, preciso do seu CPF, por favor.",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": false,
+          "detail": "chamadas: []"
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": false,
+          "detail": "mas contém!"
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": false,
+          "detail": "mas contém!"
+        }
+      ],
+      "passed": false,
+      "duration_ms": 714,
+      "error": ""
+    },
+    {
+      "scenario_id": "M9",
+      "scenario_name": "Manutenção — lead pergunta endereço (já veio no disparo)",
+      "mensagem": "qual endereço vocês vão fazer a manutenção?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "O endereço cadastrado para a manutenção é Rua das Flores, 123.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['Rua das Flores', 'Flores', '123', 'endereço']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 584,
+      "error": ""
+    },
+    {
+      "scenario_id": "M10",
+      "scenario_name": "Manutenção — lead quer cancelar CONTRATO (não a manutenção) → transfere",
+      "mensagem": "não quero mais o aluguel, quero cancelar meu contrato",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 815,
+            "queue_id": 453
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1321,
+      "error": ""
+    },
+    {
+      "scenario_id": "M11",
+      "scenario_name": "Manutenção — lead não vai estar em casa → coleta outro dia",
+      "mensagem": "não vou estar em casa essa semana toda, só semana que vem",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Sem problema! Qual dia e horário da semana que vem seria melhor para você?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 701,
+      "error": ""
+    },
+    {
+      "scenario_id": "M12",
+      "scenario_name": "Manutenção — lead relata defeito urgente (ar não gela) → transfere imediato",
+      "mensagem": "o ar não tá gelando nada, tá saindo ar quente",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 815,
+            "queue_id": 453
+          }
+        }
+      ],
+      "resposta": "Transfiro você para o atendimento agora mesmo para verificarem o que está acontecendo.",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'dia'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'horário'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'agendar'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1260,
+      "error": ""
+    },
+    {
+      "scenario_id": "M13",
+      "scenario_name": "Manutenção — lead relata defeito SEM contexto (orgânico) → consulta telefone",
+      "mensagem": "meu ar tá pingando água dentro de casa",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Vou te ajudar com isso! Para agilizar, pode me informar o CPF ou CNPJ do titular do contrato, por favor? Se não tiver fácil, posso buscar pelo telefone também.",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": false,
+          "detail": "chamadas: []"
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": false,
+          "detail": "mas contém!"
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": false,
+          "detail": "mas contém!"
+        }
+      ],
+      "passed": false,
+      "duration_ms": 802,
+      "error": ""
+    }
+  ]
+}

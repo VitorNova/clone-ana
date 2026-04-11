@@ -1,0 +1,2332 @@
+{
+  "timestamp": "2026-04-04T18:54:29.964666+00:00",
+  "total": 66,
+  "passed": 65,
+  "failed": 1,
+  "results": [
+    {
+      "scenario_id": "B1",
+      "scenario_name": "Billing — lead responde disparo com dúvida",
+      "mensagem": "Quanto tá minha fatura?",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Sua fatura atual é de R$189,90 com vencimento em 03/04/2026. O link para pagamento é o mesmo que te enviei antes: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 2285,
+      "error": ""
+    },
+    {
+      "scenario_id": "B2",
+      "scenario_name": "Billing — lead pede Pix/link (link já no histórico)",
+      "mensagem": "Manda o pix",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "Opa! O link para pagamento é o mesmo do Pix: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém 'sandbox.asaas.com/i/abc123'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'LINK DO HISTORICO'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém '{link}'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'link_placeholder'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 845,
+      "error": ""
+    },
+    {
+      "scenario_id": "B3",
+      "scenario_name": "Billing — lead pede boleto SEM contexto (orgânico)",
+      "mensagem": "Quero meu boleto",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF ou CNPJ?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 526,
+      "error": ""
+    },
+    {
+      "scenario_id": "B4",
+      "scenario_name": "Billing — lead afirma que pagou (com contexto)",
+      "mensagem": "Já paguei ontem",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true,
+            "verificar_pagamento": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1455,
+      "error": ""
+    },
+    {
+      "scenario_id": "B5",
+      "scenario_name": "Billing — lead afirma que pagou SEM contexto → pede CPF",
+      "mensagem": "Já paguei meu boleto ontem",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF ou CNPJ?",
+      "validations": [
+        {
+          "name": "Resposta contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 523,
+      "error": ""
+    },
+    {
+      "scenario_id": "B6",
+      "scenario_name": "Billing — lead quer negociar → financeiro",
+      "mensagem": "Tô sem condição de pagar, preciso negociar",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1131,
+      "error": ""
+    },
+    {
+      "scenario_id": "B7",
+      "scenario_name": "Billing — lead diz 'vou pagar depois' (compromisso vago)",
+      "mensagem": "vou pagar depois, essa semana eu resolvo",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado! Para facilitar, segue novamente o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['sandbox.asaas.com', 'link', 'pix', 'boleto', 'pagamento', 'certo', 'combinado', 'tudo bem', 'ok']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1504,
+      "error": ""
+    },
+    {
+      "scenario_id": "B8",
+      "scenario_name": "Billing — lead pede boleto do mês passado (com contexto)",
+      "mensagem": "quero o boleto do mês passado, não o desse",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Carlos, encontrei aqui a sua fatura de R$189,90 com vencimento em 03/04/2026. O link para pagamento é o mesmo que te enviei antes: https://sandbox.asaas.com/i/abc123.",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1451,
+      "error": ""
+    },
+    {
+      "scenario_id": "B9",
+      "scenario_name": "Billing — lead pede Pix SEM contexto de disparo → pede CPF",
+      "mensagem": "manda o pix pra mim",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Para te enviar o Pix, preciso do seu CPF ou CNPJ para localizar o contrato.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 676,
+      "error": ""
+    },
+    {
+      "scenario_id": "B10",
+      "scenario_name": "Billing — lead quer saber quanto deve (com contexto)",
+      "mensagem": "quanto que eu devo no total?",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "No total, você deve R$189,90 com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123.",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1330,
+      "error": ""
+    },
+    {
+      "scenario_id": "B11",
+      "scenario_name": "Billing — lead recusa pagar → Lázaro",
+      "mensagem": "não vou pagar não, tá caro demais isso aí",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 813
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '813'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1135,
+      "error": ""
+    },
+    {
+      "scenario_id": "B12",
+      "scenario_name": "Billing — lead envia comprovante por texto (com contexto)",
+      "mensagem": "acabei de fazer o pix de R$189,90, segue comprovante",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true,
+            "verificar_pagamento": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1498,
+      "error": ""
+    },
+    {
+      "scenario_id": "B13",
+      "scenario_name": "Billing — lead insiste que pagou (2a vez) → financeiro",
+      "mensagem": "já paguei sim, tenho o comprovante aqui",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '814'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1125,
+      "error": ""
+    },
+    {
+      "scenario_id": "B14",
+      "scenario_name": "Billing — lead pede Lázaro pelo nome",
+      "mensagem": "quero falar com o Lázaro",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 813
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '813'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1014,
+      "error": ""
+    },
+    {
+      "scenario_id": "B15",
+      "scenario_name": "Billing — lead quer cancelar contrato → Nathália imediato",
+      "mensagem": "quero cancelar meu contrato, não quero mais",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1032,
+      "error": ""
+    },
+    {
+      "scenario_id": "B16",
+      "scenario_name": "Billing — lead quer devolver equipamento → Nathália imediato",
+      "mensagem": "quero devolver o ar condicionado, vem buscar",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1266,
+      "error": ""
+    },
+    {
+      "scenario_id": "B17",
+      "scenario_name": "Billing — lead de outra cidade com contexto (já é cliente)",
+      "mensagem": "moro em Cuiabá, me manda o boleto",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'transferir_departamento'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1091,
+      "error": ""
+    },
+    {
+      "scenario_id": "B18",
+      "scenario_name": "Billing — lead responde 'não' seco ao disparo",
+      "mensagem": "não",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Entendi, Carlos. A fatura de R$189,90 referente ao seu ar-condicionado split de 12.000 BTUs, com vencimento em 03/04, ainda consta como pendente. Se já tiver pago, pode levar um tempinho para constar no sistema. Caso precise, o link para pagamento é o mesmo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1805,
+      "error": ""
+    },
+    {
+      "scenario_id": "B19",
+      "scenario_name": "Billing — lead contesta valor da cobrança → cobranças",
+      "mensagem": "esse valor tá errado, não concordo com essa cobrança, quero contestar",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 544,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '544'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1070,
+      "error": ""
+    },
+    {
+      "scenario_id": "B21",
+      "scenario_name": "Billing — lead diz que pagou + manda comprovante + IA não acha → financeiro",
+      "mensagem": "tá aqui o comprovante do pix que fiz ontem, R$189,90",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Pode mandar!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '814'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1110,
+      "error": ""
+    },
+    {
+      "scenario_id": "B20",
+      "scenario_name": "Billing — lead com CPF vinculado pede segunda via (sem dar CPF de novo)",
+      "mensagem": "me manda a segunda via do boleto",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Opa, Carlos! A segunda via do boleto de R$189,90 com vencimento em 03/04/2026 está disponível neste link: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém 'sandbox.asaas.com'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1426,
+      "error": ""
+    },
+    {
+      "scenario_id": "M1",
+      "scenario_name": "Manutenção — lead responde com dia/hora",
+      "mensagem": "Pode ser segunda de manhã",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Perfeito! Que tal segunda, 8 de abril, às 9h?",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 623,
+      "error": ""
+    },
+    {
+      "scenario_id": "M2",
+      "scenario_name": "Manutenção — confirma dia/hora → transfere humano",
+      "mensagem": "Isso, pode transferir",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Segunda às 9h, anotado! Vou transferir para o atendimento confirmar a visita. Posso transferir?",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1028,
+      "error": ""
+    },
+    {
+      "scenario_id": "M3",
+      "scenario_name": "Manutenção — lead recusa → transfere Nathália",
+      "mensagem": "Não preciso de manutenção, tá tudo ok",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1024,
+      "error": ""
+    },
+    {
+      "scenario_id": "M4",
+      "scenario_name": "Manutenção — pergunta se é pago",
+      "mensagem": "Quanto custa a manutenção?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Essa manutenção preventiva é gratuita, já está inclusa no seu contrato. Qual dia e horário fica melhor para você?",
+      "validations": [
+        {
+          "name": "Resposta contém algum de ['gratuita', 'inclusa', 'grátis', 'sem custo', 'gratuito', 'incluso']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 676,
+      "error": ""
+    },
+    {
+      "scenario_id": "M5",
+      "scenario_name": "Manutenção — fluxo completo 5 turnos (dia + hora + endereço → transfere)",
+      "mensagem": "tá bom, pode confirmar com o pessoal",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Perfeito! Segunda às 9h na Rua das Flores, 123. Vou transferir para o atendimento agendar a visita. Posso transferir?",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1045,
+      "error": ""
+    },
+    {
+      "scenario_id": "M6",
+      "scenario_name": "Manutenção — lead diz só 'sim' ao disparo → pergunta dia/hora",
+      "mensagem": "sim",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Ótimo! Qual dia e horário seria melhor para você?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 510,
+      "error": ""
+    },
+    {
+      "scenario_id": "M7",
+      "scenario_name": "Manutenção — lead quer reagendar (muda o dia)",
+      "mensagem": "não vai dar segunda, pode ser quarta de manhã?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Sem problema! Quarta de manhã, pode ser às 9h também?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['transferir_departamento'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 608,
+      "error": ""
+    },
+    {
+      "scenario_id": "M8",
+      "scenario_name": "Manutenção — lead muda assunto para cobrança",
+      "mensagem": "ah, aproveita e me manda o boleto do mês",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "O boleto de R$189,90 venceu dia 03/04, e o link é esse: https://sandbox.asaas.com/i/abc123\n\nE qual seria o melhor dia e horário para agendar a manutenção?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1634,
+      "error": ""
+    },
+    {
+      "scenario_id": "M9",
+      "scenario_name": "Manutenção — lead pergunta endereço (já veio no disparo)",
+      "mensagem": "qual endereço vocês vão fazer a manutenção?",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "O endereço cadastrado para a manutenção é Rua das Flores, 123.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['Rua das Flores', 'Flores', '123', 'endereço']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 583,
+      "error": ""
+    },
+    {
+      "scenario_id": "M10",
+      "scenario_name": "Manutenção — lead quer cancelar CONTRATO (não a manutenção) → transfere",
+      "mensagem": "não quero mais o aluguel, quero cancelar meu contrato",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1225,
+      "error": ""
+    },
+    {
+      "scenario_id": "M11",
+      "scenario_name": "Manutenção — lead não vai estar em casa → coleta outro dia",
+      "mensagem": "não vou estar em casa essa semana toda, só semana que vem",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Sem problema! Qual dia e horário da semana que vem seria melhor para você?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 585,
+      "error": ""
+    },
+    {
+      "scenario_id": "M12",
+      "scenario_name": "Manutenção — lead relata defeito urgente (ar parou) → transfere imediato",
+      "mensagem": "o ar parou de funcionar completamente, não liga mais",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '453'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.user_id contém '815'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1159,
+      "error": ""
+    },
+    {
+      "scenario_id": "M13",
+      "scenario_name": "Manutenção — lead relata defeito SEM contexto (orgânico) → consulta telefone",
+      "mensagem": "tenho um ar alugado com vocês e tá pingando água dentro de casa",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Para verificar qual o seu contrato, poderia me informar o seu CPF?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'transferir_departamento'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 645,
+      "error": ""
+    },
+    {
+      "scenario_id": "C1",
+      "scenario_name": "Contexto — 'ok' após disparo billing",
+      "mensagem": "ok",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado!",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1328,
+      "error": ""
+    },
+    {
+      "scenario_id": "C2",
+      "scenario_name": "Contexto — 'oi' após disparo manutenção",
+      "mensagem": "oi",
+      "context_type": "manutencao",
+      "tool_calls": [],
+      "resposta": "Qual seria o melhor dia e horário para agendarmos a sua manutenção preventiva?",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 734,
+      "error": ""
+    },
+    {
+      "scenario_id": "C3",
+      "scenario_name": "Contexto — lead novo sem disparo → saudação OK",
+      "mensagem": "Oi",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Olá! Em que posso te ajudar hoje?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 550,
+      "error": ""
+    },
+    {
+      "scenario_id": "X1",
+      "scenario_name": "Básico — saudação",
+      "mensagem": "Oi, tudo bem?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Tudo bem por aqui! Em que posso te ajudar hoje?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 637,
+      "error": ""
+    },
+    {
+      "scenario_id": "X2",
+      "scenario_name": "Básico — fora de escopo",
+      "mensagem": "Vocês vendem ar condicionado?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Olá! A Aluga Ar é especialista em aluguel de ar-condicionado. Para qual ambiente você precisa? E qual o tamanho aproximado em m²?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 658,
+      "error": ""
+    },
+    {
+      "scenario_id": "X3",
+      "scenario_name": "Básico — boleto com CPF",
+      "mensagem": "Quero ver meu boleto, meu CPF é 12345678901",
+      "context_type": "",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "cpf": "12345678901"
+          }
+        }
+      ],
+      "resposta": "Carlos, encontrei aqui uma cobrança de R$189.90 com vencimento em 03/04. O link para pagamento é https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1591,
+      "error": ""
+    },
+    {
+      "scenario_id": "X4",
+      "scenario_name": "Básico — pede humano",
+      "mensagem": "Quero falar com um atendente",
+      "context_type": "",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1227,
+      "error": ""
+    },
+    {
+      "scenario_id": "R1",
+      "scenario_name": "Regressão — transferiu sem consultar (bug: ar pingando)",
+      "mensagem": "minha mãe tem um ar alugado com vocês, está pingando",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Vou verificar no sistema qual o contrato da sua mãe. Preciso do telefone dela, pode ser?",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": false,
+          "detail": "chamadas: []"
+        },
+        {
+          "name": "Resposta NÃO contém 'departamento'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'atendimento'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'aguardar'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": false,
+      "duration_ms": 682,
+      "error": ""
+    },
+    {
+      "scenario_id": "R2",
+      "scenario_name": "Regressão — disse vou transferir mas não chamou tool",
+      "mensagem": "quero falar com o financeiro",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'vou te transferir'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'vou transferir'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1084,
+      "error": ""
+    },
+    {
+      "scenario_id": "R3",
+      "scenario_name": "Regressão — CPF salvo com sucesso (deve usar, não confirmar)",
+      "mensagem": "meu cpf é 12345678901",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Certo! Em que posso te ajudar?",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'CPF salvo'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'salvo com sucesso'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'anotado o CPF'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 615,
+      "error": ""
+    },
+    {
+      "scenario_id": "R4",
+      "scenario_name": "Regressão — CPF com cobrança (não pode dizer que não encontrou)",
+      "mensagem": "quero pagar minha parcela, meu CPF é 12345678901",
+      "context_type": "",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "cpf": "12345678901"
+          }
+        }
+      ],
+      "resposta": "Carlos, encontrei aqui uma fatura de R$189,90 vencida em 03/04. O link para pagamento é https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'não encontrei'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'não achei'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'não localizei'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1477,
+      "error": ""
+    },
+    {
+      "scenario_id": "R5",
+      "scenario_name": "Regressão — Ana sauda do zero respondendo disparo billing",
+      "mensagem": "oi",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "Olá! Em que posso te ajudar?",
+      "validations": [
+        {
+          "name": "Resposta NÃO contém 'Sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'da Aluga Ar'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'da Aluga-Ar'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso ajudar'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 574,
+      "error": ""
+    },
+    {
+      "scenario_id": "R6",
+      "scenario_name": "Regressão — manutenção com disparo não pede CPF",
+      "mensagem": "o ar está fazendo barulho",
+      "context_type": "manutencao",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n*Equipamento:* Springer 12000 BTUs\n*Endereço:* Rua das Flores, 123\n\nA manutenção é gratuita e está inclusa no seu contrato.\n\nQuer agendar? Me fala um dia e horário de preferência!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CNPJ'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1313,
+      "error": ""
+    },
+    {
+      "scenario_id": "V1",
+      "scenario_name": "Vendas — pergunta preço (com ambiente)",
+      "mensagem": "quanto custa o aluguel pra um quarto?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Para um quarto, eu sempre recomendo o de 12.000 BTUs — ele dá conta bem e você não corre o risco de ficar fraco. Sai por R$189,00 mensais no contrato de 12 meses, com instalação gratuita.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['R$', '189', 'mensais', 'mensal']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 725,
+      "error": ""
+    },
+    {
+      "scenario_id": "V2",
+      "scenario_name": "Vendas — qual BTU para quarto 15m²",
+      "mensagem": "não sei qual ar preciso, é pra um quarto de 15m²",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Para um quarto de 15m², recomendo o ar de 12.000 BTUs. Ele garante que o ambiente fique bem climatizado. No contrato de 12 meses, sai por R$189,00 mensais com instalação gratuita.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['12.000', '12000', 'BTU', 'btu']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 869,
+      "error": ""
+    },
+    {
+      "scenario_id": "V3",
+      "scenario_name": "Vendas — como funciona o contrato",
+      "mensagem": "como funciona o aluguel? tem contrato?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Funciona assim: a gente recomenda o contrato de 12 meses, que já inclui instalação gratuita de até 2 metros de cano de cobre e 4 metros de altura, além da limpeza a cada 6 meses. Por exemplo, um ar de 12.000 BTUs sai por R$189,00 mensais. Tem só uma adesão de R$189,00 na assinatura — que é basicamente o valor de uma mensalidade — e depois de 30 dias você começa a pagar as parcelas.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['12 meses', 'instalação', 'manutenção', 'mensalidade']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1054,
+      "error": ""
+    },
+    {
+      "scenario_id": "V4",
+      "scenario_name": "Vendas — fora da área de cobertura",
+      "mensagem": "atende em São Paulo?",
+      "context_type": "",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 453,
+            "user_id": 815
+          }
+        }
+      ],
+      "resposta": "",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1073,
+      "error": ""
+    },
+    {
+      "scenario_id": "V5",
+      "scenario_name": "Vendas — quer fechar → coleta nome e CPF",
+      "mensagem": "quero alugar, pode me mandar o contrato",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Ótimo! Para seguir com o aluguel, preciso de alguns dados. Qual seu nome completo e CPF?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['nome', 'CPF', 'dados']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 606,
+      "error": ""
+    },
+    {
+      "scenario_id": "V6",
+      "scenario_name": "Vendas — multa por cancelamento",
+      "mensagem": "se eu quiser cancelar antes do prazo tem multa?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Se você cancelar antes de 6 meses de contrato, tem uma taxa de mudança, que varia conforme o modelo do ar-condicionado. Qual modelo você tem?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'não sei'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 724,
+      "error": ""
+    },
+    {
+      "scenario_id": "MM1",
+      "scenario_name": "Multimodal — comprovante de pagamento (texto)",
+      "mensagem": "acabei de pagar, segue o comprovante do pix de R$189,90",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true,
+            "verificar_pagamento": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1386,
+      "error": ""
+    },
+    {
+      "scenario_id": "MM2",
+      "scenario_name": "Multimodal — áudio genérico",
+      "mensagem": "[mensagem de áudio]",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Olá! Não consigo processar áudios. Você pode me explicar o que precisa?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 594,
+      "error": ""
+    },
+    {
+      "scenario_id": "E1",
+      "scenario_name": "Edge — mensagem confusa/incompleta",
+      "mensagem": "oi sim aquele negócio lá",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Oi! Tudo bem? Para te ajudar, pode me dar mais detalhes sobre o que você precisa?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 773,
+      "error": ""
+    },
+    {
+      "scenario_id": "E2",
+      "scenario_name": "Edge — lead quer alugar e já deu CPF → coleta nome",
+      "mensagem": "quero alugar, meu CPF é 12345678901",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Ótimo! Para confirmar, qual é o seu nome completo?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['transferir_departamento', 'consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['nome', 'completo']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 674,
+      "error": ""
+    },
+    {
+      "scenario_id": "E3",
+      "scenario_name": "Edge — pergunta sobre higienização (Mundia Ar)",
+      "mensagem": "vocês fazem higienização de ar?",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "A Aluga Ar faz limpeza apenas nos equipamentos alugados, já inclusa no contrato de 12 meses. Se você busca higienização avulsa, limpeza de ar fora do contrato ou limpeza de ar que não é alugado, posso te indicar o Instagram da Mundia Ar: @mundialar.roo.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['Mundia', 'mundia', '@mundialar', 'Instagram']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 945,
+      "error": ""
+    },
+    {
+      "scenario_id": "S1",
+      "scenario_name": "Snooze — lead diz 'vou pagar sexta' → registra compromisso",
+      "mensagem": "vou pagar sexta-feira sem falta",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado, Carlos! Para facilitar, segue novamente o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1575,
+      "error": ""
+    },
+    {
+      "scenario_id": "S2",
+      "scenario_name": "Snooze — lead diz 'pago amanhã' → registra compromisso",
+      "mensagem": "pago amanhã de manhã",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado, Carlos! O link para pagamento continua sendo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1506,
+      "error": ""
+    },
+    {
+      "scenario_id": "S3",
+      "scenario_name": "Snooze — lead diz 'vou pagar depois' (vago) → registra compromisso",
+      "mensagem": "vou pagar depois, essa semana eu resolvo",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado! Para facilitar, segue novamente o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1449,
+      "error": ""
+    },
+    {
+      "scenario_id": "S4",
+      "scenario_name": "Snooze — lead diz 'semana que vem' → registra compromisso",
+      "mensagem": "só consigo pagar semana que vem, pode ser?",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-12"
+          }
+        }
+      ],
+      "resposta": "Sem problema! Para te ajudar, estou reenviando o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1592,
+      "error": ""
+    },
+    {
+      "scenario_id": "S5",
+      "scenario_name": "Snooze — lead com snooze manda msg pedindo link → Ana responde normal",
+      "mensagem": "manda o link de novo por favor",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "Segue novamente: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Resposta contém 'sandbox.asaas.com'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 664,
+      "error": ""
+    },
+    {
+      "scenario_id": "S6",
+      "scenario_name": "Snooze — lead quer negociar → financeiro (sem snooze)",
+      "mensagem": "não tenho como pagar esse valor, preciso negociar parcelas",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1164,
+      "error": ""
+    },
+    {
+      "scenario_id": "S7",
+      "scenario_name": "Snooze — lead SEM contexto diz 'pago sexta' → pede CPF (sem snooze)",
+      "mensagem": "vou pagar sexta, me manda o boleto",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 563,
+      "error": ""
+    },
+    {
+      "scenario_id": "S8",
+      "scenario_name": "Snooze — lead responde 'ok' ao disparo → NÃO registra compromisso",
+      "mensagem": "ok",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e sua mensalidade de R$189,90 venceu ontem. O link para pagamento é o mesmo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1489,
+      "error": ""
+    }
+  ]
+}

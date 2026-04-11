@@ -1,0 +1,1287 @@
+{
+  "data": "2026-03-28",
+  "proposito": "Suite completa 24 cenários + regressão baseada em bugs reais de produção",
+  "total": 24,
+  "pass": 22,
+  "fail": 2,
+  "flows": [
+    {
+      "id": "flow_001",
+      "name": "B1_lead_responde_disparo_com_dúvida",
+      "input": "Quanto tá minha fatura?",
+      "status": "PASS",
+      "duracao_ms": 2124,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quanto tá minha fatura?"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "consultar_cliente(buscar_por_telefone=\"True\")",
+          "output": "Sua fatura atual é de R$ 189,90 com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Sua fatura atual é de R$ 189,90 com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool consultar_cliente chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'cpf'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aqui é a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aluga-Ar!'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 2124
+        }
+      ]
+    },
+    {
+      "id": "flow_002",
+      "name": "B2_lead_pede_Pix_link_link_já_no_histórico",
+      "input": "Manda o pix",
+      "status": "PASS",
+      "duracao_ms": 688,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Manda o pix"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "O link para pagamento também serve como Pix copia e cola: https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta contém 'sandbox.asaas.com/i/abc123'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'LINK DO HISTORICO'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém '{link}'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'link_placeholder'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 688
+        }
+      ]
+    },
+    {
+      "id": "flow_003",
+      "name": "B3_lead_pede_boleto_SEM_contexto_orgânico",
+      "input": "Quero meu boleto",
+      "status": "PASS",
+      "duracao_ms": 616,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quero meu boleto"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá! Para te ajudar a encontrar seu boleto, preciso do seu CPF, por favor."
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Nenhuma tool chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 616
+        }
+      ]
+    },
+    {
+      "id": "flow_004",
+      "name": "B4_lead_afirma_que_pagou_com_contexto",
+      "input": "Já paguei ontem",
+      "status": "PASS",
+      "duracao_ms": 1307,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Já paguei ontem"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "consultar_cliente(verificar_pagamento=\"True\", buscar_por_telefone=\"True\")",
+          "output": "Carlos, consta um pagamento de R$ 189,90 realizado em 02/03/2026. Confere? Se sim, pode desconsiderar a mensagem anterior."
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Carlos, consta um pagamento de R$ 189,90 realizado em 02/03/2026. Confere? Se sim, pode desconsiderar a mensagem anterior."
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool consultar_cliente chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'cpf'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1307
+        }
+      ]
+    },
+    {
+      "id": "flow_005",
+      "name": "B5_lead_afirma_que_pagou_SEM_contexto__pede",
+      "input": "Já paguei meu boleto ontem",
+      "status": "PASS",
+      "duracao_ms": 1076,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Já paguei meu boleto ontem"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "consultar_cliente(verificar_pagamento=\"True\")",
+          "output": "Para confirmar o pagamento, por favor, informe o CPF ou CNPJ."
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Para confirmar o pagamento, por favor, informe o CPF ou CNPJ."
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'erro'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'error'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1076
+        }
+      ]
+    },
+    {
+      "id": "flow_006",
+      "name": "B6_lead_quer_negociar__financeiro",
+      "input": "Tô sem condição de pagar, preciso negociar",
+      "status": "PASS",
+      "duracao_ms": 1029,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Tô sem condição de pagar, preciso negociar"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(user_id=\"814\", queue_id=\"454\")",
+          "output": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Arg transferir_departamento.queue_id contém '454'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1029
+        }
+      ]
+    },
+    {
+      "id": "flow_007",
+      "name": "M1_lead_responde_com_dia_hora",
+      "input": "Pode ser segunda de manhã",
+      "status": "PASS",
+      "duracao_ms": 542,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Pode ser segunda de manhã"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Perfeito! Que horas na segunda-feira seria melhor para você?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'cpf'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aqui é a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aluga-Ar!'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 542
+        }
+      ]
+    },
+    {
+      "id": "flow_008",
+      "name": "M2_confirma_dia_hora__transfere_humano",
+      "input": "Isso, pode transferir",
+      "status": "PASS",
+      "duracao_ms": 1002,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Isso, pode transferir"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(user_id=\"815\", queue_id=\"453\")",
+          "output": "Segunda às 9h, anotado! Vou transferir para o atendimento confirmar a visita. Posso transferir?"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Segunda às 9h, anotado! Vou transferir para o atendimento confirmar a visita. Posso transferir?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Arg transferir_departamento.queue_id contém '453'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1002
+        }
+      ]
+    },
+    {
+      "id": "flow_009",
+      "name": "M3_lead_recusa",
+      "input": "Não preciso de manutenção, tá tudo ok",
+      "status": "PASS",
+      "duracao_ms": 671,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Não preciso de manutenção, tá tudo ok"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Entendi, Carlos. Sem problemas.\n\nSó para confirmar, você deseja cancelar o agendamento da manutenção preventiva?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'cpf'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aqui é a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aluga-Ar!'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 671
+        }
+      ]
+    },
+    {
+      "id": "flow_010",
+      "name": "M4_pergunta_se_é_pago",
+      "input": "Quanto custa a manutenção?",
+      "status": "PASS",
+      "duracao_ms": 761,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quanto custa a manutenção?"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá, Carlos! A manutenção preventiva do seu ar-condicionado é gratuita, já está inclusa no seu contrato. 😊\n\nPodemos agendar? Qual o melhor dia e horário para você?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta contém algum de ['gratuita', 'inclusa', 'grátis', 'sem custo', 'gratuito', 'incluso']",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 761
+        }
+      ]
+    },
+    {
+      "id": "flow_011",
+      "name": "M5_fluxo_completo_5_turnos_dia_+_hora_+_end",
+      "input": "tá bom, pode confirmar com o pessoal",
+      "status": "PASS",
+      "duracao_ms": 1142,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "tá bom, pode confirmar com o pessoal"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(user_id=\"815\", queue_id=\"453\")",
+          "output": "Perfeito! Segunda às 9h na Rua das Flores, 123. Vou transferir para o atendimento agendar a visita. Posso transferir?"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Perfeito! Segunda às 9h na Rua das Flores, 123. Vou transferir para o atendimento agendar a visita. Posso transferir?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Arg transferir_departamento.queue_id contém '453'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1142
+        }
+      ]
+    },
+    {
+      "id": "flow_012",
+      "name": "C1_'ok'_após_disparo_billing",
+      "input": "ok",
+      "status": "PASS",
+      "duracao_ms": 492,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "ok"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Em que posso ajudar?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'Aqui é a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aluga-Ar!'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 492
+        }
+      ]
+    },
+    {
+      "id": "flow_013",
+      "name": "C2_'oi'_após_disparo_manutenção",
+      "input": "oi",
+      "status": "PASS",
+      "duracao_ms": 574,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "oi"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Qual dia e horário de sua preferência para agendarmos a visita?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'Aqui é a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Aluga-Ar!'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 574
+        }
+      ]
+    },
+    {
+      "id": "flow_014",
+      "name": "C3_lead_novo_sem_disparo__saudação_OK",
+      "input": "Oi",
+      "status": "PASS",
+      "duracao_ms": 416,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Oi"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá! Em que posso ajudar?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Nenhuma tool chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'erro'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'error'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 416
+        }
+      ]
+    },
+    {
+      "id": "flow_015",
+      "name": "X1_saudação",
+      "input": "Oi, tudo bem?",
+      "status": "PASS",
+      "duracao_ms": 623,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Oi, tudo bem?"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Tudo bem! Em que posso ajudar?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Nenhuma tool chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'erro'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'error'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 623
+        }
+      ]
+    },
+    {
+      "id": "flow_016",
+      "name": "X2_fora_de_escopo",
+      "input": "Vocês vendem ar condicionado?",
+      "status": "PASS",
+      "duracao_ms": 773,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Vocês vendem ar condicionado?"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Eu sou assistente virtual da Aluga-Ar, focada em aluguel de ar condicionado. Se precisar de ajuda com isso, posso te auxiliar. Caso sua necessidade seja compra, posso te transferir para o atendimento, ok?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Nenhuma tool chamada",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 773
+        }
+      ]
+    },
+    {
+      "id": "flow_017",
+      "name": "X3_boleto_com_CPF",
+      "input": "Quero ver meu boleto, meu CPF é 12345678901",
+      "status": "PASS",
+      "duracao_ms": 1439,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quero ver meu boleto, meu CPF é 12345678901"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "consultar_cliente(cpf=\"12345678901\")",
+          "output": "Olá! Identifiquei aqui o seu contrato de aluguel do split de 12000 BTUs. Você tem uma mensalidade pendente de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é esse: https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá! Identifiquei aqui o seu contrato de aluguel do split de 12000 BTUs. Você tem uma mensalidade pendente de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é esse: https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool consultar_cliente chamada",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1439
+        }
+      ]
+    },
+    {
+      "id": "flow_018",
+      "name": "X4_pede_humano",
+      "input": "Quero falar com um atendente",
+      "status": "PASS",
+      "duracao_ms": 1057,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quero falar com um atendente"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(queue_id=\"453\", user_id=\"815\")",
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": ""
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1057
+        }
+      ]
+    },
+    {
+      "id": "flow_019",
+      "name": "R1_transferiu_sem_consultar_bug:_ar_pingand",
+      "input": "minha mãe tem um ar alugado com vocês, está pingando",
+      "status": "FAIL",
+      "duracao_ms": 1156,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "minha mãe tem um ar alugado com vocês, está pingando"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(user_id=\"815\", queue_id=\"453\")",
+          "output": "Preciso transferir para o atendimento resolver. Um momento."
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Preciso transferir para o atendimento resolver. Um momento."
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool consultar_cliente chamada",
+              "status": "FAIL"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'departamento'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'atendimento'",
+              "status": "FAIL"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'aguardar'",
+              "status": "PASS"
+            }
+          ],
+          "status": "FAIL"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "FAIL",
+          "duracao_ms": 1156
+        }
+      ],
+      "diagnostico": "Tool consultar_cliente chamada: chamadas: ['transferir_departamento']; Resposta NÃO contém 'atendimento': mas contém!"
+    },
+    {
+      "id": "flow_020",
+      "name": "R2_disse_vou_transferir_mas_não_chamou_tool",
+      "input": "quero falar com o financeiro",
+      "status": "PASS",
+      "duracao_ms": 1013,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "quero falar com o financeiro"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(queue_id=\"454\", user_id=\"814\")",
+          "output": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'vou te transferir'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'vou transferir'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1013
+        }
+      ]
+    },
+    {
+      "id": "flow_021",
+      "name": "R3_CPF_salvo_com_sucesso_deve_usar,_não_con",
+      "input": "meu cpf é 12345678901",
+      "status": "PASS",
+      "duracao_ms": 485,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "meu cpf é 12345678901"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "ok, em que posso ajudar?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'CPF salvo'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'salvo com sucesso'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'anotado o CPF'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 485
+        }
+      ]
+    },
+    {
+      "id": "flow_022",
+      "name": "R4_CPF_com_cobrança_não_pode_dizer_que_não_",
+      "input": "quero pagar minha parcela, meu CPF é 12345678901",
+      "status": "PASS",
+      "duracao_ms": 1356,
+      "context": null,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "quero pagar minha parcela, meu CPF é 12345678901"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "consultar_cliente(cpf=\"12345678901\")",
+          "output": "Olá! Identifiquei aqui uma cobrança de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é este: https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá! Identifiquei aqui uma cobrança de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é este: https://sandbox.asaas.com/i/abc123"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool consultar_cliente chamada",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'não encontrei'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'não achei'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'não localizei'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1356
+        }
+      ]
+    },
+    {
+      "id": "flow_023",
+      "name": "R5_Ana_sauda_do_zero_respondendo_disparo_bi",
+      "input": "oi",
+      "status": "PASS",
+      "duracao_ms": 505,
+      "context": "billing",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "oi"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Olá! Em que posso ajudar?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Resposta NÃO contém 'Sou a Ana'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'da Aluga Ar'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'da Aluga-Ar'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'Como posso ajudar'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'tudo bem?'",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 505
+        }
+      ]
+    },
+    {
+      "id": "flow_024",
+      "name": "R6_manutenção_com_disparo_não_pede_CPF",
+      "input": "o ar está fazendo barulho",
+      "status": "FAIL",
+      "duracao_ms": 621,
+      "context": "manutencao",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "o ar está fazendo barulho"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": null,
+          "output": null
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": "Entendi, Carlos. Para agendarmos a visita, qual o melhor dia e horário para você?"
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "Tool transferir_departamento chamada",
+              "status": "FAIL"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'CPF'",
+              "status": "PASS"
+            },
+            {
+              "criterio": "Resposta NÃO contém 'CNPJ'",
+              "status": "PASS"
+            }
+          ],
+          "status": "FAIL"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "FAIL",
+          "duracao_ms": 621
+        }
+      ],
+      "diagnostico": "Tool transferir_departamento chamada: chamadas: []"
+    }
+  ]
+}

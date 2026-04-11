@@ -1,0 +1,437 @@
+{
+  "timestamp": "2026-04-04T17:44:43.217759+00:00",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "scenario_id": "B1",
+      "scenario_name": "Billing — lead responde disparo com dúvida",
+      "mensagem": "Quanto tá minha fatura?",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Sua fatura atual é de R$189,90 com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aqui é a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'sou a Ana'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Aluga-Ar!'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'Como posso te ajudar hoje'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'tudo bem?'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 2103,
+      "error": ""
+    },
+    {
+      "scenario_id": "B2",
+      "scenario_name": "Billing — lead pede Pix/link (link já no histórico)",
+      "mensagem": "Manda o pix",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "O link para pagamento é o mesmo do Pix: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém 'sandbox.asaas.com/i/abc123'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'LINK DO HISTORICO'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém '{link}'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'link_placeholder'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 750,
+      "error": ""
+    },
+    {
+      "scenario_id": "B3",
+      "scenario_name": "Billing — lead pede boleto SEM contexto (orgânico)",
+      "mensagem": "Quero meu boleto",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF ou CNPJ?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 446,
+      "error": ""
+    },
+    {
+      "scenario_id": "B4",
+      "scenario_name": "Billing — lead afirma que pagou (com contexto)",
+      "mensagem": "Já paguei ontem",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "verificar_pagamento": true,
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1458,
+      "error": ""
+    },
+    {
+      "scenario_id": "B5",
+      "scenario_name": "Billing — lead afirma que pagou SEM contexto → pede CPF",
+      "mensagem": "Já paguei meu boleto ontem",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF ou CNPJ?",
+      "validations": [
+        {
+          "name": "Resposta contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'error'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 528,
+      "error": ""
+    },
+    {
+      "scenario_id": "B6",
+      "scenario_name": "Billing — lead quer negociar → financeiro",
+      "mensagem": "Tô sem condição de pagar, preciso negociar",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 814,
+            "queue_id": 454
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1096,
+      "error": ""
+    },
+    {
+      "scenario_id": "B7",
+      "scenario_name": "Billing — lead diz 'vou pagar depois' (compromisso vago)",
+      "mensagem": "vou pagar depois, essa semana eu resolvo",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "Entendi, Carlos. O link para pagamento continua sendo o mesmo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['sandbox.asaas.com', 'link', 'pix', 'boleto', 'pagamento', 'certo', 'combinado', 'tudo bem', 'ok']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 598,
+      "error": ""
+    },
+    {
+      "scenario_id": "B8",
+      "scenario_name": "Billing — lead pede boleto do mês passado (com contexto)",
+      "mensagem": "quero o boleto do mês passado, não o desse",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Carlos, o boleto do mês passado já está vencido. O valor é de R$189,90 e o link para pagamento é o mesmo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1262,
+      "error": ""
+    },
+    {
+      "scenario_id": "B9",
+      "scenario_name": "Billing — lead pede Pix SEM contexto de disparo → pede CPF",
+      "mensagem": "manda o pix pra mim",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Para te enviar o Pix, preciso do seu CPF ou CNPJ para puxar os dados aqui.",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 700,
+      "error": ""
+    },
+    {
+      "scenario_id": "B10",
+      "scenario_name": "Billing — lead quer saber quanto deve (com contexto)",
+      "mensagem": "quanto que eu devo no total?",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Você deve R$189,90, com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1263,
+      "error": ""
+    },
+    {
+      "scenario_id": "B11",
+      "scenario_name": "Billing — lead recusa pagar → financeiro",
+      "mensagem": "não vou pagar não, tá caro demais isso aí",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "user_id": 814,
+            "queue_id": 454
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1035,
+      "error": ""
+    },
+    {
+      "scenario_id": "B12",
+      "scenario_name": "Billing — lead envia comprovante por texto (com contexto)",
+      "mensagem": "acabei de fazer o pix de R$189,90, segue comprovante",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "consultar_cliente",
+          "args": {
+            "verificar_pagamento": true,
+            "buscar_por_telefone": true
+          }
+        }
+      ],
+      "resposta": "Verifiquei aqui e o pagamento ainda não apareceu no sistema. Tem certeza que deu certo? Se quiser tentar novamente, o link é: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool consultar_cliente chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg consultar_cliente.verificar_pagamento contém 'True'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1392,
+      "error": ""
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "data": "2026-04-10",
+  "proposito": "",
+  "total": 1,
+  "pass": 1,
+  "fail": 0,
+  "flows": [
+    {
+      "id": "flow_001",
+      "name": "interceptor_cancelar",
+      "input": "Quero cancelar meu contrato",
+      "status": "PASS",
+      "duracao_ms": 1390,
+      "nodes": [
+        {
+          "id": 1,
+          "label": "INPUT",
+          "data": "Quero cancelar meu contrato"
+        },
+        {
+          "id": 2,
+          "label": "TOOL",
+          "input": "transferir_departamento(user_id=815, queue_id=453)",
+          "output": ""
+        },
+        {
+          "id": 3,
+          "label": "OUTPUT IA",
+          "data": ""
+        },
+        {
+          "id": 4,
+          "label": "VALIDAÇÃO",
+          "criterios": [
+            {
+              "criterio": "transferir_departamento(",
+              "status": "PASS"
+            },
+            {
+              "criterio": "tool:transferir_departamento",
+              "status": "PASS"
+            }
+          ],
+          "status": "PASS"
+        },
+        {
+          "id": 5,
+          "label": "RESULTADO",
+          "status": "PASS",
+          "duracao_ms": 1390
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "timestamp": "2026-04-04T18:11:01.134225+00:00",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "scenario_id": "S1",
+      "scenario_name": "Snooze — lead diz 'vou pagar sexta' → registra compromisso",
+      "mensagem": "vou pagar sexta-feira sem falta",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado, Carlos! O link para pagamento continua sendo o mesmo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 2754,
+      "error": ""
+    },
+    {
+      "scenario_id": "S2",
+      "scenario_name": "Snooze — lead diz 'pago amanhã' → registra compromisso",
+      "mensagem": "pago amanhã de manhã",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado, Carlos! O link para pagamento continua sendo: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1520,
+      "error": ""
+    },
+    {
+      "scenario_id": "S3",
+      "scenario_name": "Snooze — lead diz 'vou pagar depois' (vago) → registra compromisso",
+      "mensagem": "vou pagar depois, essa semana eu resolvo",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Combinado! Para facilitar, segue novamente o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1857,
+      "error": ""
+    },
+    {
+      "scenario_id": "S4",
+      "scenario_name": "Snooze — lead diz 'semana que vem' → registra compromisso",
+      "mensagem": "semana que vem eu pago",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-12"
+          }
+        }
+      ],
+      "resposta": "Combinado! Mensalidade pausada até 12/04.",
+      "validations": [
+        {
+          "name": "Tool registrar_compromisso chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1417,
+      "error": ""
+    },
+    {
+      "scenario_id": "S5",
+      "scenario_name": "Snooze — lead com snooze manda msg pedindo link → Ana responde normal",
+      "mensagem": "manda o link de novo por favor",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "registrar_compromisso",
+          "args": {
+            "data_prometida": "2026-04-05"
+          }
+        }
+      ],
+      "resposta": "Sem problemas! Segue novamente o link para pagamento: https://sandbox.asaas.com/i/abc123",
+      "validations": [
+        {
+          "name": "Resposta contém 'sandbox.asaas.com'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1409,
+      "error": ""
+    },
+    {
+      "scenario_id": "S6",
+      "scenario_name": "Snooze — lead transferido pro financeiro NÃO seta snooze",
+      "mensagem": "tô sem condição nenhuma, preciso de ajuda",
+      "context_type": "billing",
+      "tool_calls": [
+        {
+          "name": "transferir_departamento",
+          "args": {
+            "queue_id": 454,
+            "user_id": 814
+          }
+        }
+      ],
+      "resposta": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!",
+      "validations": [
+        {
+          "name": "Tool transferir_departamento chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Arg transferir_departamento.queue_id contém '454'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 1103,
+      "error": ""
+    },
+    {
+      "scenario_id": "S7",
+      "scenario_name": "Snooze — lead SEM contexto diz 'pago sexta' → pede CPF (sem snooze)",
+      "mensagem": "vou pagar sexta, me manda o boleto",
+      "context_type": "",
+      "tool_calls": [],
+      "resposta": "Qual o seu CPF?",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta contém algum de ['CPF', 'cpf', 'identificar', 'localizar', 'cadastro']",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 662,
+      "error": ""
+    },
+    {
+      "scenario_id": "S8",
+      "scenario_name": "Snooze — lead responde 'ok' ao disparo → NÃO registra compromisso",
+      "mensagem": "ok",
+      "context_type": "billing",
+      "tool_calls": [],
+      "resposta": "print(default_api.consultar_cliente(buscar_por_telefone=True))",
+      "validations": [
+        {
+          "name": "Nenhuma tool chamada (permitidas: ['consultar_cliente', 'registrar_compromisso'])",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'CPF'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'cpf'",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Resposta NÃO contém 'erro'",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "duration_ms": 650,
+      "error": ""
+    }
+  ]
+}

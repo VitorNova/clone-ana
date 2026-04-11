@@ -1,0 +1,324 @@
+{
+  "data": "2026-03-28",
+  "proposito": "Suite completa 24 cenarios + regressao bugs reais",
+  "total": 24,
+  "pass": 22,
+  "fail": 2,
+  "flows": [
+    {
+      "id": "flow_001",
+      "name": "B1_lead_responde_disparo_com_duvida",
+      "status": "PASS",
+      "duracao_ms": 2124,
+      "input": "Quanto tá minha fatura?",
+      "tool": {
+        "chamou": true,
+        "nome": "consultar_cliente",
+        "args": {
+          "buscar_por_telefone": true
+        }
+      },
+      "output": "Sua fatura atual é de R$ 189,90 com vencimento em 03/04/2026. O link para pagamento é https://sandbox.asaas.com/i/abc123"
+    },
+    {
+      "id": "flow_002",
+      "name": "B2_lead_pede_pix_link_link_ja_no_historico",
+      "status": "PASS",
+      "duracao_ms": 688,
+      "input": "Manda o pix",
+      "tool": {
+        "chamou": false
+      },
+      "output": "O link para pagamento também serve como Pix copia e cola: https://sandbox.asaas.com/i/abc123"
+    },
+    {
+      "id": "flow_003",
+      "name": "B3_lead_pede_boleto_sem_contexto_organico",
+      "status": "PASS",
+      "duracao_ms": 616,
+      "input": "Quero meu boleto",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Olá! Para te ajudar a encontrar seu boleto, preciso do seu CPF, por favor."
+    },
+    {
+      "id": "flow_004",
+      "name": "B4_lead_afirma_que_pagou_com_contexto",
+      "status": "PASS",
+      "duracao_ms": 1307,
+      "input": "Já paguei ontem",
+      "tool": {
+        "chamou": true,
+        "nome": "consultar_cliente",
+        "args": {
+          "verificar_pagamento": true,
+          "buscar_por_telefone": true
+        }
+      },
+      "output": "Carlos, consta um pagamento de R$ 189,90 realizado em 02/03/2026. Confere? Se sim, pode desconsiderar a mensagem anterior."
+    },
+    {
+      "id": "flow_005",
+      "name": "B5_lead_afirma_que_pagou_sem_contexto_pede_",
+      "status": "PASS",
+      "duracao_ms": 1076,
+      "input": "Já paguei meu boleto ontem",
+      "tool": {
+        "chamou": true,
+        "nome": "consultar_cliente",
+        "args": {
+          "verificar_pagamento": true
+        }
+      },
+      "output": "Para confirmar o pagamento, por favor, informe o CPF ou CNPJ."
+    },
+    {
+      "id": "flow_006",
+      "name": "B6_lead_quer_negociar_financeiro",
+      "status": "PASS",
+      "duracao_ms": 1029,
+      "input": "Tô sem condição de pagar, preciso negociar",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "user_id": 814,
+          "queue_id": 454
+        }
+      },
+      "output": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+    },
+    {
+      "id": "flow_007",
+      "name": "M1_lead_responde_com_dia_hora",
+      "status": "PASS",
+      "duracao_ms": 542,
+      "input": "Pode ser segunda de manhã",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Perfeito! Que horas na segunda-feira seria melhor para você?"
+    },
+    {
+      "id": "flow_008",
+      "name": "M2_confirma_dia_hora_transfere_humano",
+      "status": "PASS",
+      "duracao_ms": 1002,
+      "input": "Isso, pode transferir",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "user_id": 815,
+          "queue_id": 453
+        }
+      },
+      "output": "Segunda às 9h, anotado! Vou transferir para o atendimento confirmar a visita. Posso transferir?"
+    },
+    {
+      "id": "flow_009",
+      "name": "M3_lead_recusa",
+      "status": "PASS",
+      "duracao_ms": 671,
+      "input": "Não preciso de manutenção, tá tudo ok",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Entendi, Carlos. Sem problemas.\n\nSó para confirmar, você deseja cancelar o agendamento da manutenção preventiva?"
+    },
+    {
+      "id": "flow_010",
+      "name": "M4_pergunta_se_e_pago",
+      "status": "PASS",
+      "duracao_ms": 761,
+      "input": "Quanto custa a manutenção?",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Olá, Carlos! A manutenção preventiva do seu ar-condicionado é gratuita, já está inclusa no seu contrato. 😊\n\nPodemos agendar? Qual o melhor dia e horário para você?"
+    },
+    {
+      "id": "flow_011",
+      "name": "M5_fluxo_completo_5_turnos_dia_hora_enderec",
+      "status": "PASS",
+      "duracao_ms": 1142,
+      "input": "tá bom, pode confirmar com o pessoal",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "user_id": 815,
+          "queue_id": 453
+        }
+      },
+      "output": "Perfeito! Segunda às 9h na Rua das Flores, 123. Vou transferir para o atendimento agendar a visita. Posso transferir?"
+    },
+    {
+      "id": "flow_012",
+      "name": "C1_ok_apos_disparo_billing",
+      "status": "PASS",
+      "duracao_ms": 492,
+      "input": "ok",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Em que posso ajudar?"
+    },
+    {
+      "id": "flow_013",
+      "name": "C2_oi_apos_disparo_manutencao",
+      "status": "PASS",
+      "duracao_ms": 574,
+      "input": "oi",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Qual dia e horário de sua preferência para agendarmos a visita?"
+    },
+    {
+      "id": "flow_014",
+      "name": "C3_lead_novo_sem_disparo_saudacao_ok",
+      "status": "PASS",
+      "duracao_ms": 416,
+      "input": "Oi",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Olá! Em que posso ajudar?"
+    },
+    {
+      "id": "flow_015",
+      "name": "X1_saudacao",
+      "status": "PASS",
+      "duracao_ms": 623,
+      "input": "Oi, tudo bem?",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Tudo bem! Em que posso ajudar?"
+    },
+    {
+      "id": "flow_016",
+      "name": "X2_fora_de_escopo",
+      "status": "PASS",
+      "duracao_ms": 773,
+      "input": "Vocês vendem ar condicionado?",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Eu sou assistente virtual da Aluga-Ar, focada em aluguel de ar condicionado. Se precisar de ajuda com isso, posso te auxiliar. Caso sua necessidade seja compra, posso te transferir para o atendimento, ok?"
+    },
+    {
+      "id": "flow_017",
+      "name": "X3_boleto_com_cpf",
+      "status": "PASS",
+      "duracao_ms": 1439,
+      "input": "Quero ver meu boleto, meu CPF é 12345678901",
+      "tool": {
+        "chamou": true,
+        "nome": "consultar_cliente",
+        "args": {
+          "cpf": "12345678901"
+        }
+      },
+      "output": "Olá! Identifiquei aqui o seu contrato de aluguel do split de 12000 BTUs. Você tem uma mensalidade pendente de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é esse: https://sandbox.asaas.com/i/abc123"
+    },
+    {
+      "id": "flow_018",
+      "name": "X4_pede_humano",
+      "status": "PASS",
+      "duracao_ms": 1057,
+      "input": "Quero falar com um atendente",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "queue_id": 453,
+          "user_id": 815
+        }
+      },
+      "output": ""
+    },
+    {
+      "id": "flow_019",
+      "name": "R1_transferiu_sem_consultar_bug_ar_pingando",
+      "status": "FAIL",
+      "duracao_ms": 1156,
+      "input": "minha mãe tem um ar alugado com vocês, está pingando",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "user_id": 815,
+          "queue_id": 453
+        }
+      },
+      "output": "Preciso transferir para o atendimento resolver. Um momento."
+    },
+    {
+      "id": "flow_020",
+      "name": "R2_disse_vou_transferir_mas_nao_chamou_tool",
+      "status": "PASS",
+      "duracao_ms": 1013,
+      "input": "quero falar com o financeiro",
+      "tool": {
+        "chamou": true,
+        "nome": "transferir_departamento",
+        "args": {
+          "queue_id": 454,
+          "user_id": 814
+        }
+      },
+      "output": "Olá, Carlos! Passando para lembrar que sua mensalidade de R$ 189,90 vence em 03/04/2026.\n\nSegue o link para pagamento:\nhttps://sandbox.asaas.com/i/abc123\n\nQualquer dúvida, estou por aqui!"
+    },
+    {
+      "id": "flow_021",
+      "name": "R3_cpf_salvo_com_sucesso_deve_usar_nao_conf",
+      "status": "PASS",
+      "duracao_ms": 485,
+      "input": "meu cpf é 12345678901",
+      "tool": {
+        "chamou": false
+      },
+      "output": "ok, em que posso ajudar?"
+    },
+    {
+      "id": "flow_022",
+      "name": "R4_cpf_com_cobranca_nao_pode_dizer_que_nao_",
+      "status": "PASS",
+      "duracao_ms": 1356,
+      "input": "quero pagar minha parcela, meu CPF é 12345678901",
+      "tool": {
+        "chamou": true,
+        "nome": "consultar_cliente",
+        "args": {
+          "cpf": "12345678901"
+        }
+      },
+      "output": "Olá! Identifiquei aqui uma cobrança de R$ 189.90 com vencimento em 03/04/2026. O link para pagamento é este: https://sandbox.asaas.com/i/abc123"
+    },
+    {
+      "id": "flow_023",
+      "name": "R5_ana_sauda_do_zero_respondendo_disparo_bi",
+      "status": "PASS",
+      "duracao_ms": 505,
+      "input": "oi",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Olá! Em que posso ajudar?"
+    },
+    {
+      "id": "flow_024",
+      "name": "R6_manutencao_com_disparo_nao_pede_cpf",
+      "status": "FAIL",
+      "duracao_ms": 621,
+      "input": "o ar está fazendo barulho",
+      "tool": {
+        "chamou": false
+      },
+      "output": "Entendi, Carlos. Para agendarmos a visita, qual o melhor dia e horário para você?"
+    }
+  ]
+}
