@@ -30,31 +30,76 @@ def detectar_tool_como_texto(resposta: str) -> Optional[dict]:
 
     Returns:
         Dict com tool detectada e args extraídos, ou None se limpa.
-        Ex: {"tool": "transferir_departamento", "queue_id": 453, "user_id": 815}
+        Ex: {"tool": "transferir_departamento", "destino": "atendimento"}
     """
     if not resposta:
         return None
 
-    # Padrão: nome_da_tool(param=valor, param=valor)
+    # Destinos válidos para mapeamento
+    _DESTINOS_VALIDOS = {"atendimento", "financeiro", "cobrancas", "lazaro"}
+    _QUEUE_TO_DESTINO = {"453": "atendimento", "454": "financeiro", "544": "cobrancas"}
+
+    # === DETECÇÃO 1: formato função — tool_name(args) ===
     match = re.search(
         r"(transferir_departamento|consultar_cliente|registrar_compromisso)"
         r"\s*\(",
         resposta,
     )
-    if not match:
-        return None
+    if match:
+        tool_name = match.group(1)
+        result = {"tool": tool_name}
 
-    tool_name = match.group(1)
-    result = {"tool": tool_name}
+        if tool_name == "transferir_departamento":
+            d = re.search(r'destino\s*=\s*["\'](\w+)["\']', resposta)
+            if d:
+                result["destino"] = d.group(1)
+            else:
+                q = re.search(r"queue_id\s*=\s*(\d+)", resposta)
+                if q:
+                    result["destino"] = _QUEUE_TO_DESTINO.get(q.group(1), "atendimento")
 
-    # Extrair args se for transferência
-    if tool_name == "transferir_departamento":
-        q = re.search(r"queue_id\s*=\s*(\d+)", resposta)
-        u = re.search(r"user_id\s*=\s*(\d+)", resposta)
-        if q:
-            result["queue_id"] = int(q.group(1))
-        if u:
-            result["user_id"] = int(u.group(1))
+        logger.warning(f"[HALLUCINATION:{tool_name}] Tool como texto (formato função): {resposta[:100]}")
+        return result
+
+    # === DETECÇÃO 2: formato descritivo — "Chamar transferir_departamento com..." ===
+    match2 = re.search(
+        r"[Cc]hama(?:r|ndo)?(?:\s+\w+)*\s+[`]?(transferir_departamento|consultar_cliente|registrar_compromisso)[`]?",
+        resposta,
+    )
+    if match2:
+        tool_name = match2.group(1)
+        result = {"tool": tool_name}
+
+        if tool_name == "transferir_departamento":
+            for dest in _DESTINOS_VALIDOS:
+                if dest in resposta.lower():
+                    result["destino"] = dest
+                    break
+
+        logger.warning(f"[HALLUCINATION:{tool_name}] Tool como texto (formato descritivo): {resposta[:100]}")
+        return result
+
+    # === DETECÇÃO 3: formato narrativo — "(transfere para atendimento)", "[transferindo para...]" ===
+    match3 = re.search(
+        r"[\[\(]\s*(?:silenciosamente\s+)?(?:transfere|transferindo|transferir)\s+(?:para\s+)?(?:o\s+)?(\w+)",
+        resposta,
+        re.IGNORECASE,
+    )
+    if match3:
+        destino_raw = match3.group(1).lower()
+        # Mapear nome do setor para destino
+        _SETOR_TO_DESTINO = {
+            "atendimento": "atendimento", "nathália": "atendimento", "nathalia": "atendimento",
+            "financeiro": "financeiro", "tieli": "financeiro",
+            "cobranças": "cobrancas", "cobrancas": "cobrancas",
+            "lázaro": "lazaro", "lazaro": "lazaro", "dono": "lazaro",
+        }
+        destino = _SETOR_TO_DESTINO.get(destino_raw)
+        if destino:
+            logger.warning(f"[HALLUCINATION:transferir_departamento] Tool como texto (formato narrativo): {resposta[:100]}")
+            return {"tool": "transferir_departamento", "destino": destino}
+
+    return None
 
     logger.warning(f"[HALLUCINATION:{tool_name}] Tool escrita como texto: {resposta[:100]}")
     return result

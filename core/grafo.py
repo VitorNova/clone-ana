@@ -62,7 +62,7 @@ def _build_model():
     llm = ChatGoogleGenerativeAI(
         model=GEMINI_MODEL,
         google_api_key=os.environ.get("GOOGLE_API_KEY"),
-        temperature=0.3,
+        temperature=0.0,
         max_output_tokens=4096,
         transport="rest",
         safety_settings={
@@ -420,22 +420,21 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
         registrar_incidente(phone, "tool_como_texto", f"Gemini escreveu {tool_texto['tool']} como texto", {"resposta": resposta[:300]})
 
         # Se era transferência, executar diretamente
-        if tool_texto["tool"] == "transferir_departamento" and tool_texto.get("queue_id") and tool_texto.get("user_id"):
+        if tool_texto["tool"] == "transferir_departamento" and tool_texto.get("destino"):
             try:
                 from core.tools import transferir_departamento
                 result_transfer = transferir_departamento.invoke({
-                    "queue_id": tool_texto["queue_id"],
-                    "user_id": tool_texto["user_id"],
+                    "destino": tool_texto["destino"],
                     "phone": phone,
                 })
                 if "Erro" in str(result_transfer):
                     logger.error(f"[GRAFO:{phone}] Interceptor: transferência falhou — {result_transfer}")
-                    log_event("tool_as_text_transfer_failed", phone, tool="transferir_departamento", queue_id=tool_texto["queue_id"], error=str(result_transfer)[:200])
+                    log_event("tool_as_text_transfer_failed", phone, tool="transferir_departamento", destino=tool_texto["destino"], error=str(result_transfer)[:200])
                     from infra.leadbox_client import enviar_resposta_leadbox
                     enviar_resposta_leadbox(phone, FALLBACK_MSG, queue_id=current_queue, user_id=USER_IA)
                 else:
-                    logger.info(f"[GRAFO:{phone}] Transferência executada via interceptor: fila {tool_texto['queue_id']} → {result_transfer}")
-                    log_event("tool_as_text_recovered", phone, tool="transferir_departamento", queue_id=tool_texto["queue_id"])
+                    logger.info(f"[GRAFO:{phone}] Transferência executada via interceptor: {tool_texto['destino']} → {result_transfer}")
+                    log_event("tool_as_text_recovered", phone, tool="transferir_departamento", destino=tool_texto["destino"])
             except Exception as e:
                 logger.error(f"[GRAFO:{phone}] Falha ao executar transferência via interceptor: {e}", exc_info=True)
                 from infra.leadbox_client import enviar_resposta_leadbox
