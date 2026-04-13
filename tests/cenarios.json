@@ -37,7 +37,7 @@
     "descricao": "Lead diz que já pagou — IA transfere para Financeiro sem consultar",
     "mensagens": ["Já paguei meu boleto ontem"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 454, "user_id": 814},
+    "expect_tool_args": {"destino": "financeiro"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["vou transferir", "transferindo", "erro"]
   },
@@ -100,7 +100,7 @@
     "mensagens": ["não vou pagar não, tá caro demais isso aí"],
     "context": "billing",
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 813},
+    "expect_tool_args": {"destino": "lazaro"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["erro"]
   },
@@ -111,7 +111,7 @@
     "context": "billing",
     "phone": "5566996743520",
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 454, "user_id": 814},
+    "expect_tool_args": {"destino": "financeiro"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["CPF", "cpf", "vou transferir"]
   },
@@ -122,7 +122,7 @@
     "context": "manutencao",
     "phone": "5566996743520",
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_no_tool_error": true
   },
   {
@@ -130,7 +130,7 @@
     "descricao": "Lead SEM disparo relata barulho no ar — IA transfere direto para Nathália",
     "mensagens": ["meu ar condicionado tá fazendo um barulho estranho"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_no_tool_error": true
   },
   {
@@ -195,7 +195,7 @@
     "descricao": "Lead quer cancelar contrato — IA transfere para Nathália",
     "mensagens": ["Quero cancelar meu contrato"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["vou transferir"]
   },
@@ -211,7 +211,7 @@
     "descricao": "Lead recusa pagar — IA transfere para Lázaro (dono)",
     "mensagens": ["Não vou pagar, tá caro demais"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 813},
+    "expect_tool_args": {"destino": "lazaro"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["vou transferir"]
   },
@@ -220,7 +220,7 @@
     "descricao": "Lead relata defeito no ar — IA transfere sem pedir CPF",
     "mensagens": ["Meu ar parou de funcionar"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["CPF", "cpf"]
   },
@@ -238,7 +238,7 @@
     "mensagens": ["não preciso não, tá tudo ok"],
     "context": "manutencao",
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_no_tool_error": true
   },
   {
@@ -246,7 +246,7 @@
     "descricao": "Lead SEM disparo diz que fez pix — IA transfere para Financeiro",
     "mensagens": ["fiz o pix agora"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 454, "user_id": 814},
+    "expect_tool_args": {"destino": "financeiro"},
     "expect_no_tool_error": true,
     "expect_not_contains": ["vou transferir"]
   },
@@ -269,7 +269,7 @@
     ],
     "mensagens": ["Meu nome é Maria de Fatima"],
     "expect_tool": "transferir_departamento",
-    "expect_tool_args": {"queue_id": 453, "user_id": 815},
+    "expect_tool_args": {"destino": "atendimento"},
     "expect_not_contains": ["erro", "error"]
   },
   {
@@ -290,5 +290,23 @@
     "expect_tool": "transferir_departamento",
     "expect_no_tool_error": true,
     "expect_not_contains": ["110", "220", "bivolt"]
+  },
+  {
+    "nome": "bug_real_575503_billing_ja_pagou",
+    "descricao": "CASO REAL 13/04: cliente billing responde 'já paguei' — IA DEVE chamar transferir_departamento",
+    "mensagens": ["Já paguei essa conta"],
+    "context": "billing",
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["comprovante", "CPF", "cpf"]
+  },
+  {
+    "nome": "bug_real_471466_pagou_pro_lazaro",
+    "descricao": "CASO REAL 13/04: cliente billing diz que pagou pro Lázaro — IA DEVE chamar transferir_departamento para financeiro",
+    "mensagens": ["Chegou uma cobrança, mas o pagamento foi feito na sexta para o Lázaro"],
+    "context": "billing",
+    "expect_tool": "transferir_departamento",
+    "expect_no_tool_error": true,
+    "expect_not_contains": ["CPF", "cpf"]
   }
 ]

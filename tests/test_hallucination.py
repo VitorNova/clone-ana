@@ -12,7 +12,7 @@ quanto os patterns regex diretamente.
 import re
 from unittest.mock import MagicMock
 
-from core.hallucination import detectar_hallucination, _HALL_CHECKS
+from core.hallucination import detectar_hallucination, inferir_destino_do_texto, _HALL_CHECKS
 
 
 # ── Helpers ──
@@ -52,8 +52,9 @@ def test_falso_positivo_transferir():
     assert not _detecta("Posso te transferir para o financeiro?", "transferir_departamento")
 
 
-def test_falso_positivo_vou_transferir():
-    assert not _detecta("Vou te transferir para o financeiro, pode ser?", "transferir_departamento")
+def test_hallucination_vou_transferir():
+    # "Vou te transferir" sem chamar a tool É hallucination (confirmado em produção 2026-04-13)
+    assert _detecta("Vou te transferir para o financeiro, pode ser?", "transferir_departamento")
 
 
 def test_hallucination_encaminhei():
@@ -142,3 +143,42 @@ def test_detectar_hallucination_mensagem_vazia():
     """Lista vazia → sem hallucination."""
     result = detectar_hallucination([], "5565999990000")
     assert result == []
+
+
+# ── Testes de inferir_destino_do_texto (contingência hallucination) ──
+
+def test_inferir_destino_financeiro():
+    assert inferir_destino_do_texto("Vou transferir para o financeiro verificar") == "financeiro"
+
+
+def test_inferir_destino_atendimento():
+    assert inferir_destino_do_texto("Já encaminhei para o atendimento") == "atendimento"
+
+
+def test_inferir_destino_cobrancas():
+    assert inferir_destino_do_texto("Te transferi para cobranças") == "cobrancas"
+
+
+def test_inferir_destino_caso_real_575503():
+    """Caso real de produção 2026-04-13: 'Vou transferir para lá!' sem setor explícito."""
+    result = inferir_destino_do_texto(
+        "Como você já efetuou o pagamento, preciso que encaminhe o comprovante para o financeiro verificar, tudo bem? Vou transferir para lá!"
+    )
+    assert result == "financeiro"
+
+
+def test_inferir_destino_texto_sem_transferencia():
+    assert inferir_destino_do_texto("Olá! Como posso te ajudar?") is None
+
+
+def test_inferir_destino_fallback_atendimento():
+    """Texto com 'transferir' mas sem setor → fallback atendimento."""
+    assert inferir_destino_do_texto("Vou transferir para lá!") == "atendimento"
+
+
+def test_inferir_destino_none():
+    assert inferir_destino_do_texto(None) is None
+
+
+def test_inferir_destino_vazio():
+    assert inferir_destino_do_texto("") is None

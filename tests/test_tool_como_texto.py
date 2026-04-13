@@ -8,14 +8,13 @@ class TestDetectarToolComoTexto:
     """Testa a detecção de tool escrita como texto pelo Gemini."""
 
     def test_transferir_com_args_completos(self):
-        """String com chamada literal completa deve retornar tool + args."""
+        """String com chamada literal completa deve retornar tool + destino."""
         resultado = detectar_tool_como_texto(
             "transferir_departamento(queue_id=453, user_id=815)"
         )
         assert resultado is not None
         assert resultado["tool"] == "transferir_departamento"
-        assert resultado["queue_id"] == 453
-        assert resultado["user_id"] == 815
+        assert resultado["destino"] == "atendimento"
 
     def test_transferir_financeiro(self):
         """Transferência para financeiro com IDs diferentes."""
@@ -23,8 +22,8 @@ class TestDetectarToolComoTexto:
             "transferir_departamento(queue_id=454, user_id=814)"
         )
         assert resultado is not None
-        assert resultado["queue_id"] == 454
-        assert resultado["user_id"] == 814
+        assert resultado["tool"] == "transferir_departamento"
+        assert resultado["destino"] == "financeiro"
 
     def test_consultar_cliente_como_texto(self):
         """consultar_cliente escrita como texto deve ser detectada."""
@@ -80,7 +79,7 @@ class TestDetectarToolComoTexto:
             "Ok, vou chamar transferir_departamento(queue_id=453, user_id=815) agora."
         )
         assert resultado is not None
-        assert resultado["queue_id"] == 453
+        assert resultado["destino"] == "atendimento"
 
     def test_transferir_sem_args(self):
         """Tool com parênteses mas sem args extraíveis."""

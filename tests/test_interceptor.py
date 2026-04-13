@@ -45,8 +45,7 @@ class TestInterceptorToolAsText:
         )
         assert resultado is not None
         assert resultado["tool"] == "transferir_departamento"
-        assert resultado["queue_id"] == 453
-        assert resultado["user_id"] == 815
+        assert resultado["destino"] == "atendimento"
 
     def test_nao_detecta_resposta_limpa(self):
         """Resposta normal sem tool como texto retorna None."""
@@ -73,24 +72,21 @@ class TestInterceptorToolAsText:
 
         assert tool_texto is not None, "Interceptor deveria detectar tool como texto"
         assert tool_texto["tool"] == "transferir_departamento"
-        assert tool_texto["queue_id"] == 453
-        assert tool_texto["user_id"] == 815
+        assert tool_texto["destino"] == "atendimento"
 
         # Simula a lógica do interceptor (sem rodar o grafo inteiro)
         with patch("core.tools.transferir_departamento") as mock_transfer:
-            mock_transfer.invoke.return_value = "Transferido para fila 453 com sucesso"
+            mock_transfer.invoke.return_value = "Transferido com sucesso"
 
-            # O interceptor chamaria:
-            if tool_texto["tool"] == "transferir_departamento" and tool_texto.get("queue_id"):
+            # O interceptor usa destino para resolver queue_id/user_id
+            if tool_texto["tool"] == "transferir_departamento" and tool_texto.get("destino"):
                 result = mock_transfer.invoke({
-                    "queue_id": tool_texto["queue_id"],
-                    "user_id": tool_texto["user_id"],
+                    "destino": tool_texto["destino"],
                     "phone": "5565999990000",
                 })
 
             mock_transfer.invoke.assert_called_once_with({
-                "queue_id": 453,
-                "user_id": 815,
+                "destino": "atendimento",
                 "phone": "5565999990000",
             })
 
@@ -105,5 +101,5 @@ class TestInterceptorToolAsText:
 
         assert tool_texto is not None
         assert tool_texto["tool"] == "consultar_cliente"
-        # Sem queue_id → não pode executar transferência → fallback
-        assert "queue_id" not in tool_texto
+        # Sem destino → não pode executar transferência → fallback
+        assert "destino" not in tool_texto

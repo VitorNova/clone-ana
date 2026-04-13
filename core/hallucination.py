@@ -17,6 +17,34 @@ _HALL_CHECKS = [
     ("consultar_cliente", [r"\bverifiquei\b", r"\bconsultei\b", "encontrei no sistema", r"(?<!não )(?<!nao )\blocalizei\b"]),
 ]
 
+_SETOR_TO_DESTINO = {
+    "atendimento": "atendimento", "nathália": "atendimento", "nathalia": "atendimento",
+    "financeiro": "financeiro", "tieli": "financeiro",
+    "cobranças": "cobrancas", "cobrancas": "cobrancas",
+    "lázaro": "lazaro", "lazaro": "lazaro", "dono": "lazaro",
+}
+
+
+def inferir_destino_do_texto(resposta: str) -> Optional[str]:
+    """Tenta extrair destino de transferência a partir do texto natural da Ana.
+
+    Usado como contingência quando hallucination de transferir_departamento é detectada
+    mas não há tool_call com destino explícito.
+
+    Returns:
+        Nome do destino ("atendimento", "financeiro", "cobrancas", "lazaro") ou None.
+    """
+    if not resposta:
+        return None
+    resp_lower = resposta.lower()
+    for setor, destino in _SETOR_TO_DESTINO.items():
+        if setor in resp_lower:
+            return destino
+    # "para lá" sem setor explícito → fallback atendimento (caso mais comum)
+    if "transferir" in resp_lower or "encaminh" in resp_lower:
+        return "atendimento"
+    return None
+
 
 def detectar_tool_como_texto(resposta: str) -> Optional[dict]:
     """
@@ -87,22 +115,12 @@ def detectar_tool_como_texto(resposta: str) -> Optional[dict]:
     )
     if match3:
         destino_raw = match3.group(1).lower()
-        # Mapear nome do setor para destino
-        _SETOR_TO_DESTINO = {
-            "atendimento": "atendimento", "nathália": "atendimento", "nathalia": "atendimento",
-            "financeiro": "financeiro", "tieli": "financeiro",
-            "cobranças": "cobrancas", "cobrancas": "cobrancas",
-            "lázaro": "lazaro", "lazaro": "lazaro", "dono": "lazaro",
-        }
         destino = _SETOR_TO_DESTINO.get(destino_raw)
         if destino:
             logger.warning(f"[HALLUCINATION:transferir_departamento] Tool como texto (formato narrativo): {resposta[:100]}")
             return {"tool": "transferir_departamento", "destino": destino}
 
     return None
-
-    logger.warning(f"[HALLUCINATION:{tool_name}] Tool escrita como texto: {resposta[:100]}")
-    return result
 
 
 def detectar_hallucination(novas_mensagens: list, phone: str) -> list[str]:

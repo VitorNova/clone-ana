@@ -259,70 +259,30 @@ def transferir_departamento(
     destino: str,
     phone: Annotated[str, InjectedState("phone")] = "",
 ) -> str:
-    """Transfere o atendimento para outro departamento no Leadbox CRM.
+    """Transfere o atendimento para outro departamento no Leadbox CRM. O telefone é injetado automaticamente.
 
-REGRAS ABSOLUTAS:
-- NUNCA envie mensagem ao cliente antes de transferir. Chame esta tool silenciosamente.
-- EXECUTE a tool imediatamente. NUNCA diga "vou transferir" sem chamar a ferramenta. NUNCA peça confirmação ("ok?", "pode ser?") antes de transferir.
-- O telefone é injetado automaticamente do contexto.
-
-QUANDO USAR ESTA TOOL:
+QUANDO USAR:
 
 → destino="atendimento" (Nathália):
-  - Novo aluguel: após coletar nome completo e CPF do cliente
-  - Retirada de equipamento: cliente quer devolver ar, mudar de casa, cancelar → transferir IMEDIATAMENTE sem pedir CPF
-  - Manutenção/Defeito: ar quebrou, parou de funcionar, não gela, pingando, barulho estranho, cheiro ruim
-  - Assistência técnica
-  - Reclamação ou insatisfação do cliente
-  - Cancelamento de contrato
-  - Cliente pede para falar com humano ou atendente
-  - Cliente fora da área de cobertura (menciona cidade que NÃO é Rondonópolis ou Primavera do Leste) → transferir SEM dizer "não atendemos"
-  - Pergunta que você não sabe responder
-  - Cliente atual precisando de suporte técnico
+  - Novo aluguel após coletar nome+CPF
+  - Retirada, devolução, mudança de endereço, cancelamento
+  - Defeito, manutenção, ar quebrou, pingando, barulho, não gela
+  - Reclamação, insatisfação
+  - Cliente pede humano/atendente
+  - Cidade fora de Rondonópolis/Primavera do Leste
+  - Pergunta que não sabe responder
 
 → destino="financeiro" (Tieli):
-  - Cliente diz que já pagou ("já paguei", "paguei ontem", "fiz o pix", "já transferi")
-  - Cliente envia comprovante de pagamento
-  - Cliente informou que tem restrição no CPF ou CNPJ (nome sujo, negativado)
-  - Cliente já é cliente E consultar_cliente não resolveu a dúvida financeira
-  - Negociação de dívida ou parcelamento especial
+  - Cliente diz que já pagou ou envia comprovante
+  - Restrição no CPF (nome sujo, negativado)
+  - Negociação de dívida
 
 → destino="cobrancas" (Tieli):
-  - Dúvidas sobre valores cobrados
-  - Contestação de fatura (valor errado, cobrança indevida)
-  - Cliente diz que não reconhece cobrança
-  - Fatura não encontrada após usar consultar_cliente
+  - Contestação de fatura, valor errado, cobrança indevida
 
 → destino="lazaro" (Lázaro/Dono):
-  - Cliente pede para falar com o dono, proprietário ou Lázaro
-  - Assuntos que só o dono pode resolver
+  - Cliente pede falar com dono/proprietário/Lázaro
   - Reclamações graves
-
-EXEMPLOS DE USO:
-
-Exemplo 1: Cliente diz "quero alugar" e já informou nome "João Silva" e CPF "12345678900"
-→ Chamar: destino="atendimento"
-
-Exemplo 2: Cliente diz "quero devolver o ar" ou "vou mudar de endereço" ou "quero cancelar"
-→ Chamar IMEDIATAMENTE (sem pedir CPF): destino="atendimento"
-
-Exemplo 3: Cliente diz "meu ar quebrou" ou "o ar tá pingando" ou "não tá gelando" ou "tá fazendo barulho"
-→ Chamar IMEDIATAMENTE: destino="atendimento"
-
-Exemplo 4: Cliente diz "tenho restrição no nome" ou "meu CPF tá sujo" ou "estou negativado"
-→ Chamar: destino="financeiro"
-
-Exemplo 5: Cliente enviou foto de comprovante mas consultar_cliente ainda mostra fatura pendente
-→ Chamar: destino="financeiro"
-
-Exemplo 6: Cliente diz "não concordo com essa cobrança" ou "esse valor tá errado" ou "não reconheço essa fatura"
-→ Chamar: destino="cobrancas"
-
-Exemplo 7: Cliente diz "quero falar com o Lázaro" ou "quero falar com o dono" ou "passa pro proprietário"
-→ Chamar: destino="lazaro"
-
-Exemplo 8: Cliente pergunta algo que você não sabe responder
-→ Chamar: destino="atendimento"
 
     Args:
         destino: Departamento de destino. Valores válidos: "atendimento", "financeiro", "cobrancas", "lazaro".
