@@ -1,4 +1,4 @@
-# Descrição do que este arquivo faz — linha 2 até 13
+# Descrição do que este arquivo faz — linha 2 até 13 (boilerplate, não requer validação)
 """Job de Manutenção Preventiva — Lembrete D-7.
 
 Busca contratos com proxima_manutencao = hoje + 7 dias
@@ -12,7 +12,7 @@ Uso:
     PM2 cron: seg-sex às 9h (ecosystem.config.js)
 """
 
-# Importa as bibliotecas necessárias — linha 16 até 25
+# Importa as bibliotecas necessárias — linha 16 até 25 (boilerplate, não requer validação)
 import asyncio
 import sys
 import logging
@@ -24,18 +24,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
-# Importa conexões do projeto (banco de dados, constantes) — linha 28 até 29
+# Importa conexões do projeto (banco de dados, constantes) — linha 28 até 29 (boilerplate, não requer validação)
 from infra.supabase import get_supabase
 from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS
 
-# Configura o sistema de logs — linha 32 até 36
+# Configura o sistema de logs — linha 32 até 36 (boilerplate, não requer validação)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Mensagem que o cliente recebe no WhatsApp — linha 39 até 46
+# Mensagem que o cliente recebe no WhatsApp — linha 39 até 46 (não validado)
 TEMPLATE = (
     "Olá, {nome}!\n\n"
     "Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n"
@@ -123,7 +123,7 @@ def buscar_contratos_d7(hoje: date) -> list:
         return []
 
 
-# Função principal que roda o job de manutenção — linha 127 até 166
+# Função principal que roda o job de manutenção — linha 127 até 161 (não validado)
 async def run_manutencao():
     """Entry point do job de manutenção."""
     from infra.redis import get_redis_service
@@ -265,6 +265,6 @@ async def _processar_notificacao(item: dict, redis) -> bool:
     return True
 
 
-# Executa o job quando o arquivo é rodado diretamente — linha 275 até 276
+# Executa o job quando o arquivo é rodado diretamente — linha 269 até 270 (boilerplate, não requer validação)
 if __name__ == "__main__":
     asyncio.run(run_manutencao())
