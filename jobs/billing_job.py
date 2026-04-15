@@ -1,3 +1,4 @@
+# Descrição do que este arquivo faz — linha 2 até 12 (boilerplate, não requer validação)
 """Job de Billing — Disparos automáticos de cobrança.
 
 Busca cobranças PENDING/OVERDUE no Supabase (sincronizado do Asaas),
@@ -10,6 +11,7 @@ Uso:
     PM2 cron: seg-sex às 9h (ecosystem.config.js)
 """
 
+# Importa bibliotecas e configura ambiente — linha 15 até 37 (boilerplate, não requer validação)
 import asyncio
 import sys
 import logging
@@ -33,7 +35,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Régua de cobrança: offsets em dias úteis onde envia
+# Régua de cobrança e templates — linha 39 até 63 (não validado)
 SCHEDULE = [0, 1, 3, 5, 7, 10, 15]
 
 # Mapeamento: tipo de disparo → template oficial WhatsApp (nome no Meta)
@@ -60,6 +62,7 @@ TEMPLATES_HISTORICO = {
 }
 
 
+# Conta dias úteis entre duas datas — linha 66 até 79 (não validado)
 def count_business_days(from_date: date, to_date: date) -> int:
     """Conta dias úteis entre duas datas (sem feriados)."""
     if from_date == to_date:
@@ -76,11 +79,13 @@ def count_business_days(from_date: date, to_date: date) -> int:
     return count * sign
 
 
+# Define qual template usar baseado no offset — linha 83 até 85 (não validado)
 def get_template_key(offset: int) -> str:
     """Retorna template_key baseado no offset."""
     return "due_date" if offset == 0 else "overdue"
 
 
+# Busca cobranças elegíveis para disparo hoje — linha 89 até 165 (não validado)
 def buscar_elegiveis(hoje: date) -> list:
     """Busca cobranças elegíveis para disparo hoje."""
     supabase = get_supabase()
@@ -161,6 +166,7 @@ def buscar_elegiveis(hoje: date) -> list:
         return []
 
 
+# Função principal que roda o job de billing — linha 170 até 210 (não validado)
 async def run_billing():
     """Entry point do billing job."""
     from infra.redis import get_redis_service
@@ -204,6 +210,7 @@ async def run_billing():
         await redis.client.delete(lock_key)
 
 
+# Processa e envia um disparo de cobrança para cada cliente — linha 214 até 351 (não validado)
 async def _processar_disparo(item: dict, redis) -> bool:
     """Processa um disparo: anti-duplicata -> salvar contexto -> enviar."""
     from infra.event_logger import log_event
@@ -278,6 +285,17 @@ async def _processar_disparo(item: dict, redis) -> bool:
         from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
+            # Lead novo: inicializar histórico com role:user para coerência (validado no manutencao_job)
+            init_history = {"messages": [{
+                "role": "user",
+                "content": "Oi",
+                "timestamp": now,
+            }]}
+            supabase.table(TABLE_LEADS).update({
+                "conversation_history": init_history,
+                "updated_at": now,
+            }).eq("id", lead_id).execute()
+
             result = supabase.table(TABLE_LEADS).select(
                 "id, conversation_history"
             ).eq("id", lead_id).limit(1).execute()
@@ -345,5 +363,6 @@ async def _processar_disparo(item: dict, redis) -> bool:
     return True
 
 
+# Executa o job quando o arquivo é rodado diretamente — linha 356 até 357 (boilerplate, não requer validação)
 if __name__ == "__main__":
     asyncio.run(run_billing())
