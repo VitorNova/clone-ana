@@ -1,4 +1,4 @@
-# docstring
+# Descrição do que este arquivo faz — linha 2 até 13
 """Job de Manutenção Preventiva — Lembrete D-7.
 
 Busca contratos com proxima_manutencao = hoje + 7 dias
@@ -12,8 +12,8 @@ Uso:
     PM2 cron: seg-sex às 9h (ecosystem.config.js)
 """
 
-# imports stdlib + setup
-import asyncio  # 16|
+# Importa as bibliotecas necessárias — linha 16 até 25
+import asyncio
 import sys
 import logging
 from datetime import date, datetime, timezone, timedelta
@@ -22,32 +22,32 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
-load_dotenv()  # 25|
+load_dotenv()
 
-# imports do projeto
-from infra.supabase import get_supabase  # 28|
-from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS  # 29|
+# Importa conexões do projeto (banco de dados, constantes) — linha 28 até 29
+from infra.supabase import get_supabase
+from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS
 
-# logging
-logging.basicConfig(  # 32|
+# Configura o sistema de logs — linha 32 até 36
+logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
-logger = logging.getLogger(__name__)  # 36|
+logger = logging.getLogger(__name__)
 
-# template whatsapp
-TEMPLATE = (  # 39|
+# Mensagem que o cliente recebe no WhatsApp — linha 39 até 46
+TEMPLATE = (
     "Olá, {nome}!\n\n"
     "Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n"
     "*Equipamento:* {equipamento}\n"
     "*Endereço:* {endereco}\n\n"
     "A manutenção é gratuita e está inclusa no seu contrato.\n\n"
     "Quer agendar? Me fala um dia e horário de preferência!"
-)  # 46|
+)
 
 
-# buscar contratos d-7
-def buscar_contratos_d7(hoje: date) -> list:  # 50|
+# Busca contratos com manutenção em 7 dias e monta a mensagem — linha 50 até 123
+def buscar_contratos_d7(hoje: date) -> list:
     """Busca contratos com manutenção prevista para daqui 7 dias."""
     supabase = get_supabase()
     if not supabase:
@@ -120,11 +120,11 @@ def buscar_contratos_d7(hoje: date) -> list:  # 50|
 
     except Exception as e:
         logger.exception("[MANUTENCAO] Falha ao buscar contratos")
-        return []  # 123|
+        return []
 
 
-# entry point do job
-async def run_manutencao():  # 127|
+# Função principal que roda o job de manutenção — linha 127 até 166
+async def run_manutencao():
     """Entry point do job de manutenção."""
     from infra.redis import get_redis_service
 
@@ -163,11 +163,11 @@ async def run_manutencao():  # 127|
         logger.info(f"[MANUTENCAO] Concluído: enviados={enviados} erros={erros}")
 
     finally:
-        await redis.client.delete(lock_key)  # 166|
+        await redis.client.delete(lock_key)
 
 
-# processar e enviar uma notificação
-async def _processar_notificacao(item: dict, redis) -> bool:  # 170|
+# Processa e envia uma notificação para cada cliente — linha 170 até 259
+async def _processar_notificacao(item: dict, redis) -> bool:
     """Processa uma notificação de manutenção."""
     from infra.event_logger import log_event
 
@@ -256,9 +256,9 @@ async def _processar_notificacao(item: dict, redis) -> bool:  # 170|
     await redis.client.set(dedup_key, "1", ex=86400)
     logger.info(f"[MANUTENCAO:{phone}] Notificação D-7 enviada (contrato={contract_id})")
     log_event("manutencao_sent", phone, contract_id=contract_id)
-    return True  # 259|
+    return True
 
 
-# __main__
-if __name__ == "__main__":  # 263|
-    asyncio.run(run_manutencao())  # 264|
+# Executa o job quando o arquivo é rodado diretamente — linha 263 até 264
+if __name__ == "__main__":
+    asyncio.run(run_manutencao())
