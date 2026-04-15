@@ -8,18 +8,45 @@ O objetivo é ter um ambiente seguro para **visualizar, revisar e editar código
 
 ## Como funciona a conferência
 
-Cada arquivo passa por revisão manual com o Claude. As seções do código recebem comentários indicando o status:
+Cada arquivo passa por revisão manual com o Claude. O código é dividido em seções lógicas, e cada seção recebe um **título-comentário** logo acima do bloco, com o formato:
 
-- `(validado)` — seção revisada e aprovada
-- `(não validado)` — seção ainda pendente de revisão
-
-Exemplo (ver `jobs/manutencao_job.py`):
-```python
-# Cliente Supabase singleton — linha 68 até 90 (validado)
-# Mensagem que o cliente recebe no WhatsApp — linha 58 até 66 (não validado)
+```
+# {Descrição da seção} — linha {início} até {fim} ({selo})
 ```
 
-O trabalho é incremental: vou pedindo ao Claude para revisar seções específicas, e conforme aprovo, o selo muda de "não validado" para "validado".
+### Formato do título
+
+| Parte | Obrigatório | Exemplo |
+|-------|-------------|---------|
+| Descrição | Sim | `Cliente Supabase singleton` |
+| Origem (se veio de outro arquivo) | Não | `(antes em infra/supabase.py)` |
+| Linhas | Sim | `linha 68 até 90` |
+| Selo | Sim | `(validado)`, `(não validado)`, ou `(boilerplate, não requer validação)` |
+
+### Selos possíveis
+
+- `(validado)` — seção revisada e aprovada
+- `(não validado)` — seção pendente de revisão
+- `(boilerplate, não requer validação)` — imports, logging setup, `if __name__` — pular
+- Selo misto quando parte foi validada e parte não: `(query, filtro status: validados | montagem mensagem: não validado)`
+
+### Exemplos reais (ver `jobs/manutencao_job.py`)
+
+```python
+# Importa as bibliotecas necessárias — linha 16 até 33 (boilerplate, não requer validação)
+# Constantes centralizadas (antes em core/constants.py) — linha 42 até 56 (não validado)
+# Cliente Supabase singleton (antes em infra/supabase.py) — linha 68 até 90 (validado)
+# Busca contratos com manutenção em 7 dias — linha 293 até 365 (query, filtro status, fallback telefone: validados | montagem mensagem: não validado)
+```
+
+### Regras ao preparar um arquivo para conferência
+
+1. **Ler o arquivo inteiro** e dividir em seções lógicas (uma função, um bloco de constantes, um setup, etc.)
+2. **Colocar um título-comentário** acima de cada seção, com descrição, linhas e selo `(não validado)`
+3. **Marcar boilerplate** (imports, logging, `if __name__`) com `(boilerplate, não requer validação)`
+4. **Se a seção veio de outro arquivo** (ex: job consolidado), incluir a origem: `(antes em infra/supabase.py)`
+5. **Nunca alterar o código** ao adicionar títulos — só inserir os comentários
+6. O trabalho de revisão é incremental: conforme eu aprovo, o selo muda para `(validado)`
 
 ## Arquivo em conferência atual
 
