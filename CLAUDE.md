@@ -47,7 +47,6 @@ ana-langgraph/
 │   ├── tools.py                ← consultar_cliente + transferir_departamento + registrar_compromisso
 │   ├── constants.py            ← Constantes centralizadas (Leadbox IDs, tabelas, filas)
 │   ├── context_detector.py     ← Detecta contexto billing/manutenção no histórico
-│   ├── auto_snooze.py          ← Auto-snooze 48h após interação billing
 │   ├── hallucination.py        ← Detector de hallucination + interceptor tool-como-texto
 │   └── prompts.py              ← System prompt da Ana
 ├── infra/
@@ -96,17 +95,17 @@ ana-langgraph/
 └── MEMORY.md                   ← Memória persistente entre sessões
 ```
 
-### Contagem: 30 arquivos Python
+### Contagem: 29 arquivos Python
 
 | Camada | Arquivos | Linhas |
 |---|---|---|
 | `api/` | 2 | ~430 |
-| `core/` | 6 | ~1660 |
+| `core/` | 5 | ~1610 |
 | `infra/` | 7 | ~740 |
 | `jobs/` | 2 | ~600 |
 | `scripts/` | 1 | ~150 |
 | `tests/` | 12 | ~2930 |
-| **Total** | **30** | **~6510** |
+| **Total** | **29** | **~6460** |
 
 ---
 
@@ -486,7 +485,6 @@ As 3 regressões são do mesmo padrão: o 2.5-flash ignora instrução de transf
 | Novo job automatico | `jobs/{nome}_job.py` | Registrar no PM2 ecosystem |
 | Logica de deteccao | `core/hallucination.py` | Pos-resposta: texto vs tools |
 | Contexto de disparo | `core/context_detector.py` | billing ou manutencao |
-| Logica de snooze | `core/auto_snooze.py` | Fallback 48h se Gemini nao chamar tool |
 | Logica de buffer | `infra/buffer.py` | Cap 20 msgs, delay 9s |
 | Logica de Redis | `infra/redis.py` | Locks, pausa, markers, snooze |
 | Logica de Supabase | `infra/supabase.py` + `infra/nodes_supabase.py` | supabase.py = client, nodes = historico/persistencia |
@@ -518,7 +516,7 @@ As 3 regressões são do mesmo padrão: o 2.5-flash ignora instrução de transf
 
 ## Regras
 
-- Código enxuto — 30 arquivos Python (ver contagem na seção Estrutura)
+- Código enxuto — 29 arquivos Python (ver contagem na seção Estrutura)
 - Uma tabela só (`ana_leads`) com histórico inline
 - IDs de filas/usuários vivem em **2 lugares**: `core/prompts.py` E na docstring de `transferir_departamento` em `core/tools.py`. **Atualizar AMBOS** ao mudar IDs
 - Sem multi-tenant — single agent, single table

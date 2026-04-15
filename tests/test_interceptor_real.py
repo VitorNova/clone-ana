@@ -104,7 +104,6 @@ async def run_test():
          patch("infra.leadbox_client._mark_sent_by_ia", side_effect=fake_mark_sent), \
          patch("infra.incidentes.registrar_incidente", side_effect=fake_registrar_incidente), \
          patch("infra.event_logger.log_event", side_effect=fake_log_event), \
-         patch("core.auto_snooze.auto_snooze_billing", new_callable=AsyncMock), \
          patch("core.grafo.ADMIN_PHONE", None):
 
         # Mockar Supabase fail-safe (query de fila)

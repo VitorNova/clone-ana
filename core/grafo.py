@@ -481,11 +481,6 @@ async def processar_mensagens(phone: str, messages: list, context: dict = None):
         _context_extra.pop(phone, None)
         return
 
-    # Auto-snooze 48h: se era contexto billing e Ana NÃO transferiu, silencia disparos
-    from core.auto_snooze import auto_snooze_billing
-    ctx_extra = _context_extra.get(phone, "")
-    await auto_snooze_billing(phone, ctx_extra, novas_mensagens, redis)
-
     # Limpar cache de contexto
     _context_extra.pop(phone, None)
 

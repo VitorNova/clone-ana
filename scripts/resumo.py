@@ -63,7 +63,7 @@ def resumo(events):
     phones = Counter(e.get("phone", "?") for e in events if e.get("phone"))
     tools = Counter(e.get("tool", "") for e in events if e["type"] == "tool_call")
     errors = [e for e in events if e["type"] == "error"]
-    snoozes = [e for e in events if e["type"] in ("auto_snooze", "snooze_set")]
+    snoozes = [e for e in events if e["type"] == "snooze_set"]
     transfers = [e for e in events if e["type"] == "tool_call" and e.get("tool") == "transferir_departamento"]
 
     first = events[0].get("ts", "?")[:16]
