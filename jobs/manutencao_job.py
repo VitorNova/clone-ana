@@ -46,7 +46,7 @@ TEMPLATE = (
 )
 
 
-# Busca contratos com manutenção em 7 dias e monta a mensagem — linha 50 até 123
+# Busca contratos com manutenção em 7 dias e monta a mensagem — linha 50 até 123 (query, filtro status, fallback telefone: validados | montagem mensagem: não validado)
 def buscar_contratos_d7(hoje: date) -> list:
     """Busca contratos com manutenção prevista para daqui 7 dias."""
     supabase = get_supabase()
@@ -71,8 +71,8 @@ def buscar_contratos_d7(hoje: date) -> list:
 
         elegiveis = []
         for contrato in result.data:
-            # Pular se status não é pending (ciclo: pending→notified→contacted→scheduled→transferred→completed)
-            if contrato.get("maintenance_status") not in (None, "pending"):
+            # Pular se já notificado
+            if contrato.get("maintenance_status") == "notified":
                 continue
 
             # Buscar telefone: primeiro do contrato, depois do cliente Asaas
@@ -129,11 +129,6 @@ async def run_manutencao():
     from infra.redis import get_redis_service
 
     hoje = date.today()
-    weekday = hoje.weekday()
-    if weekday >= 5:
-        logger.info("[MANUTENCAO] Fim de semana, pulando")
-        return
-
     redis = await get_redis_service()
 
     lock_key = "lock:manutencao_job"
@@ -166,7 +161,7 @@ async def run_manutencao():
         await redis.client.delete(lock_key)
 
 
-# Processa e envia uma notificação para cada cliente — linha 170 até 259
+# Processa e envia uma notificação para cada cliente — linha 170 até 271 (validado)
 async def _processar_notificacao(item: dict, redis) -> bool:
     """Processa uma notificação de manutenção."""
     from infra.event_logger import log_event
@@ -186,7 +181,7 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         logger.info(f"[MANUTENCAO:{phone}] Já notificou hoje")
         return False
 
-    # Salvar contexto ANTES de enviar
+    # Salvar contexto ANTES de enviar (validado)
     supabase = get_supabase()
     if not supabase:
         return False
@@ -208,7 +203,7 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
-            # Inicializar histórico com role:user para manter coerência
+            # Lead novo: inicializar histórico com role:user para coerência (validado)
             init_history = {"messages": [{
                 "role": "user",
                 "content": "Oi",
@@ -229,18 +224,7 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         logger.warning(f"[MANUTENCAO:{phone}] Lead não encontrado/criado")
         return False
 
-    # Enviar via Leadbox ANTES de salvar no histórico
-    from infra.leadbox_client import enviar_resposta_leadbox
-
-    tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
-
-    from core.constants import QUEUE_MANUTENCAO, USER_IA
-    if not enviar_resposta_leadbox(tel_envio, message, raw=True, queue_id=QUEUE_MANUTENCAO, user_id=USER_IA):
-        logger.error(f"[MANUTENCAO:{phone}] Leadbox erro ao enviar")
-        await redis.client.set(dedup_key, "1", ex=86400)
-        return False
-
-    # Só salvar contexto no histórico DEPOIS de confirmar envio
+    # Salvar contexto role:model no histórico (validado)
     history = lead.get("conversation_history") or {"messages": []}
     history["messages"].append({
         "role": "model",
@@ -264,12 +248,23 @@ async def _processar_notificacao(item: dict, redis) -> bool:
     except Exception as e:
         logger.warning(f"[MANUTENCAO:{phone}] Erro ao marcar contrato: {e}")
 
+    # Enviar via Leadbox (validado)
+    from infra.leadbox_client import enviar_resposta_leadbox
+
+    tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
+
+    from core.constants import QUEUE_MANUTENCAO, USER_IA
+    if not enviar_resposta_leadbox(tel_envio, message, raw=True, queue_id=QUEUE_MANUTENCAO, user_id=USER_IA):
+        logger.error(f"[MANUTENCAO:{phone}] Leadbox erro ao enviar")
+        await redis.client.set(dedup_key, "1", ex=86400)
+        return False
+
     await redis.client.set(dedup_key, "1", ex=86400)
     logger.info(f"[MANUTENCAO:{phone}] Notificação D-7 enviada (contrato={contract_id})")
     log_event("manutencao_sent", phone, contract_id=contract_id)
     return True
 
 
-# Executa o job quando o arquivo é rodado diretamente — linha 263 até 264
+# Executa o job quando o arquivo é rodado diretamente — linha 275 até 276
 if __name__ == "__main__":
     asyncio.run(run_manutencao())
