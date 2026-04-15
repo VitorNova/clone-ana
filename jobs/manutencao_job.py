@@ -208,6 +208,17 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
+            # Inicializar histórico com role:user para manter coerência
+            init_history = {"messages": [{
+                "role": "user",
+                "content": "Oi",
+                "timestamp": now,
+            }]}
+            supabase.table(TABLE_LEADS).update({
+                "conversation_history": init_history,
+                "updated_at": now,
+            }).eq("id", lead_id).execute()
+
             result = supabase.table(TABLE_LEADS).select(
                 "id, conversation_history"
             ).eq("id", lead_id).limit(1).execute()
@@ -218,7 +229,18 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         logger.warning(f"[MANUTENCAO:{phone}] Lead não encontrado/criado")
         return False
 
-    # Salvar contexto
+    # Enviar via Leadbox ANTES de salvar no histórico
+    from infra.leadbox_client import enviar_resposta_leadbox
+
+    tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
+
+    from core.constants import QUEUE_MANUTENCAO, USER_IA
+    if not enviar_resposta_leadbox(tel_envio, message, raw=True, queue_id=QUEUE_MANUTENCAO, user_id=USER_IA):
+        logger.error(f"[MANUTENCAO:{phone}] Leadbox erro ao enviar")
+        await redis.client.set(dedup_key, "1", ex=86400)
+        return False
+
+    # Só salvar contexto no histórico DEPOIS de confirmar envio
     history = lead.get("conversation_history") or {"messages": []}
     history["messages"].append({
         "role": "model",
@@ -241,17 +263,6 @@ async def _processar_notificacao(item: dict, redis) -> bool:
         }).eq("id", contract_id).execute()
     except Exception as e:
         logger.warning(f"[MANUTENCAO:{phone}] Erro ao marcar contrato: {e}")
-
-    # Enviar via Leadbox
-    from infra.leadbox_client import enviar_resposta_leadbox
-
-    tel_envio = clean_phone if clean_phone.startswith("55") else f"55{clean_phone}"
-
-    from core.constants import QUEUE_MANUTENCAO, USER_IA
-    if not enviar_resposta_leadbox(tel_envio, message, raw=True, queue_id=QUEUE_MANUTENCAO, user_id=USER_IA):
-        logger.error(f"[MANUTENCAO:{phone}] Leadbox erro ao enviar")
-        await redis.client.set(dedup_key, "1", ex=86400)
-        return False
 
     await redis.client.set(dedup_key, "1", ex=86400)
     logger.info(f"[MANUTENCAO:{phone}] Notificação D-7 enviada (contrato={contract_id})")
