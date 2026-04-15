@@ -1,3 +1,4 @@
+# docstring — linha 2| a 13|
 """Job de Manutenção Preventiva — Lembrete D-7.
 
 Busca contratos com proxima_manutencao = hoje + 7 dias
@@ -11,6 +12,7 @@ Uso:
     PM2 cron: seg-sex às 9h (ecosystem.config.js)
 """
 
+# imports stdlib + setup — linha 16| a 25|
 import asyncio
 import sys
 import logging
@@ -22,15 +24,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
+# imports do projeto — linha 28| a 29|
 from infra.supabase import get_supabase
 from core.constants import TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS
 
+# logging — linha 32| a 36|
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
 
+# template whatsapp — linha 39| a 46|
 TEMPLATE = (
     "Olá, {nome}!\n\n"
     "Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n"
@@ -41,6 +46,7 @@ TEMPLATE = (
 )
 
 
+# buscar contratos d-7 — linha 50| a 123|
 def buscar_contratos_d7(hoje: date) -> list:
     """Busca contratos com manutenção prevista para daqui 7 dias."""
     supabase = get_supabase()
@@ -117,6 +123,7 @@ def buscar_contratos_d7(hoje: date) -> list:
         return []
 
 
+# entry point do job — linha 127| a 166|
 async def run_manutencao():
     """Entry point do job de manutenção."""
     from infra.redis import get_redis_service
@@ -159,6 +166,7 @@ async def run_manutencao():
         await redis.client.delete(lock_key)
 
 
+# processar e enviar uma notificação — linha 170| a 259|
 async def _processar_notificacao(item: dict, redis) -> bool:
     """Processa uma notificação de manutenção."""
     from infra.event_logger import log_event
@@ -251,5 +259,6 @@ async def _processar_notificacao(item: dict, redis) -> bool:
     return True
 
 
+# __main__ — linha 263| a 264|
 if __name__ == "__main__":
     asyncio.run(run_manutencao())
