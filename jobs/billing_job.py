@@ -210,7 +210,7 @@ async def run_billing():
         await redis.client.delete(lock_key)
 
 
-# Processa e envia um disparo de cobrança para cada cliente — linha 214 até 351 (não validado)
+# Processa e envia um disparo de cobrança para cada cliente — linha 214 até 351
 async def _processar_disparo(item: dict, redis) -> bool:
     """Processa um disparo: anti-duplicata -> salvar contexto -> enviar."""
     from infra.event_logger import log_event
@@ -221,20 +221,20 @@ async def _processar_disparo(item: dict, redis) -> bool:
     context_type = item["context_type"]
     clean_phone = "".join(filter(str.isdigit, phone))
 
-    # Verificar pausa
+    # Verificar pausa (validado no manutencao_job)
     if await redis.is_paused(phone):
         logger.info(f"[BILLING:{phone}] Pausado, adiando")
         log_event("billing_skipped", phone, reason="paused")
         return False
 
-    # Verificar snooze (lead prometeu pagar em data X)
+    # Verificar snooze (lead prometeu pagar em data X) (não validado)
     if await redis.is_snoozed(phone, "billing"):
         snooze_until = await redis.snooze_get(phone, "billing")
         logger.info(f"[BILLING:{phone}] Snooze ativo até {snooze_until}, pulando")
         log_event("billing_skipped", phone, reason="snoozed", until=snooze_until)
         return False
 
-    # Fallback: checar snooze no Supabase (caso Redis reiniciou)
+    # Fallback: checar snooze no Supabase (caso Redis reiniciou) (não validado)
     try:
         _sb = get_supabase()
         if _sb:
@@ -257,7 +257,7 @@ async def _processar_disparo(item: dict, redis) -> bool:
     except Exception as e:
         logger.warning(f"[BILLING:{phone}] Snooze DB check falhou: {e}")
 
-    # Anti-duplicata
+    # Anti-duplicata (validado no manutencao_job)
     dedup_key = f"dispatch:{phone}:{context_type}:{reference_id}:{date.today().isoformat()}"
     if await redis.client.exists(dedup_key):
         logger.info(f"[BILLING:{phone}] Já enviou hoje")
@@ -285,17 +285,6 @@ async def _processar_disparo(item: dict, redis) -> bool:
         from infra.nodes_supabase import upsert_lead
         lead_id = upsert_lead(clean_phone)
         if lead_id:
-            # Lead novo: inicializar histórico com role:user para coerência (validado no manutencao_job)
-            init_history = {"messages": [{
-                "role": "user",
-                "content": "Oi",
-                "timestamp": now,
-            }]}
-            supabase.table(TABLE_LEADS).update({
-                "conversation_history": init_history,
-                "updated_at": now,
-            }).eq("id", lead_id).execute()
-
             result = supabase.table(TABLE_LEADS).select(
                 "id, conversation_history"
             ).eq("id", lead_id).limit(1).execute()
@@ -306,7 +295,7 @@ async def _processar_disparo(item: dict, redis) -> bool:
         logger.warning(f"[BILLING:{phone}] Lead não encontrado/criado")
         return False
 
-    # Salvar contexto no histórico
+    # Salvar contexto role:model no histórico (validado no manutencao_job)
     history = lead.get("conversation_history") or {"messages": []}
     history["messages"].append({
         "role": "model",
@@ -321,7 +310,7 @@ async def _processar_disparo(item: dict, redis) -> bool:
         "updated_at": now,
     }).eq("id", lead["id"]).execute()
 
-    # Enviar template via Meta API + registrar no Leadbox (CRM + fila)
+    # Enviar template via Meta API + registrar no Leadbox (CRM + fila) (mover fila: validado no manutencao_job | template Meta: não validado)
     from infra.leadbox_client import enviar_template_leadbox
     from core.constants import QUEUE_BILLING, USER_IA
 
@@ -340,7 +329,7 @@ async def _processar_disparo(item: dict, redis) -> bool:
         await redis.client.set(dedup_key, "1", ex=86400)
         return False
 
-    # Marcar ia_cobrou na asaas_cobrancas (para o painel Cobranças & Pagamentos)
+    # Marcar ia_cobrou na asaas_cobrancas (para o painel Cobranças & Pagamentos) (não validado)
     try:
         existing = supabase.table(TABLE_ASAAS_COBRANCAS).select(
             "ia_total_notificacoes"
