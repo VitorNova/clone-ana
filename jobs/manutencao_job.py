@@ -71,8 +71,8 @@ def buscar_contratos_d7(hoje: date) -> list:
 
         elegiveis = []
         for contrato in result.data:
-            # Pular se já notificado
-            if contrato.get("maintenance_status") == "notified":
+            # Pular se status não é pending (ciclo: pending→notified→contacted→scheduled→transferred→completed)
+            if contrato.get("maintenance_status") not in (None, "pending"):
                 continue
 
             # Buscar telefone: primeiro do contrato, depois do cliente Asaas
