@@ -12,6 +12,10 @@ Registro do que foi feito em cada sessão de conferência. Leia antes de qualque
   - Variáveis Leadbox confirmadas com agente de produção (anaproducao): valores reais vêm do `.env`
   - Commit: `e32418a`
 
+**Outros commits:**
+- MEMORY.md reescrito — apenas registro de sessões (`d6875ca`)
+- CLAUDE.md — conferência é feita por humano usando Claude Code (`1ab3b0a`)
+
 **Pendente:**
 - Linha 58–66 — Template WhatsApp `(não validado)`
 - Linha 293–365 — Montagem da mensagem `(parcial: montagem mensagem não validado)`
