@@ -8,7 +8,7 @@ O objetivo é ter um ambiente seguro para **visualizar, revisar e editar código
 
 ## Como funciona a conferência
 
-Cada arquivo passa por revisão manual com o Claude. O código é dividido em seções lógicas, e cada seção recebe um **título-comentário** logo acima do bloco, com o formato:
+Cada arquivo passa por revisão feita por um humano que usa o Claude Code como ferramenta. O código é dividido em seções lógicas, e cada seção recebe um **título-comentário** logo acima do bloco, com o formato:
 
 ```
 # {Descrição da seção} — linha {início} até {fim} ({selo})
@@ -63,3 +63,4 @@ O projeto original é o agente Ana (Aluga-Ar) — um chatbot WhatsApp que roda e
 3. **Quando eu pedir para revisar uma seção**, analisar a lógica e reportar problemas encontrados
 4. **Quando eu aprovar**, mudar o selo para `(validado)`
 5. **Não alterar lógica** sem eu pedir — o objetivo é conferir, não refatorar
+6. **Respostas curtas** — usar o mínimo de caracteres possível
