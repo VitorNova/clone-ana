@@ -64,3 +64,4 @@ O projeto original é o agente Ana (Aluga-Ar) — um chatbot WhatsApp que roda e
 4. **Quando eu aprovar**, mudar o selo para `(validado)`
 5. **Não alterar lógica** sem eu pedir — o objetivo é conferir, não refatorar
 6. **Respostas curtas** — usar o mínimo de caracteres possível
+7. **Sempre atualizar o MEMORY.md** após cada validação — registrar o que foi validado, o que falta, e em qual arquivo estamos trabalhando. Commitar e pushar.
