@@ -57,11 +57,11 @@ AGENT_NAME = "Ana"
 # Mensagem que o cliente recebe no WhatsApp — linha 58 até 66 (não validado)
 TEMPLATE = (
     "Olá, {nome}!\n\n"
-    "Está chegando a hora da manutenção preventiva do seu ar-condicionado!\n\n"
-    "*Equipamento:* {equipamento}\n"
-    "*Endereço:* {endereco}\n\n"
-    "A manutenção é gratuita e está inclusa no seu contrato.\n\n"
-    "Quer agendar? Me fala um dia e horário de preferência!"
+    "Está chegando a hora da manutenção preventiva do seu ar-condicionado.\n\n"
+    "Equipamento: {equipamento}\n"
+    "Endereço: {endereco}\n\n"
+    "A manutenção é gratuita e já está inclusa no seu contrato. "
+    "Quer agendar? Me responde com um dia e horário de preferência."
 )
 
 # Cliente Supabase singleton (antes em infra/supabase.py) — linha 68 até 90 (validado)
