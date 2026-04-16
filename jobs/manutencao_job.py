@@ -38,7 +38,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Constantes centralizadas (antes em core/constants.py) — linha 42 até 56 (não validado)
+# Constantes centralizadas (antes em core/constants.py) — linha 42 até 56 (validado)
 TABLE_LEADS = "ana_leads"
 TABLE_ASAAS_CLIENTES = "asaas_clientes"
 TABLE_CONTRACT_DETAILS = "contract_details"
