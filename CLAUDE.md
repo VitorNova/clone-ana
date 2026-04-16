@@ -48,6 +48,86 @@ Cada arquivo passa por revisão feita por um humano que usa o Claude Code como f
 5. **Nunca alterar o código** ao adicionar títulos — só inserir os comentários
 6. O trabalho de revisão é incremental: conforme eu aprovo, o selo muda para `(validado)`
 
+### Como consolidar um braço (job) em arquivo único
+
+Quando o usuário pedir para consolidar um braço para conferência, gerar um arquivo
+`jobs/<nome>_job.py` que reúna todo o código necessário num único arquivo.
+
+#### O que inlinar (copiar para dentro do arquivo)
+
+Inlinar **toda função, classe ou constante que o job usa diretamente** de `core/` e `infra/`.
+Para cada módulo importado pelo job, percorrer a árvore de dependências e trazer junto.
+Copiar apenas o que é usado — não copiar o módulo inteiro se só uma função é chamada.
+
+**Sempre inlinar:**
+- Constantes usadas pelo job (de `core/constants.py`)
+- Clients singleton (Supabase, Redis) — copiar a função factory e o pattern singleton
+- Funções de envio (Leadbox, WhatsApp) — junto com helpers como marker anti-eco
+- Event logger e registro de incidentes
+- Funções de persistência usadas pelo job (upsert_lead, salvar_mensagem, etc.)
+- Context detector, se o job salva/lê contexto no histórico
+
+**Regra geral:** se está em `infra/` ou `core/` e o job chama, inlinar.
+
+#### O que manter como import externo
+
+- **Bibliotecas de terceiros** (`httpx`, `redis`, `supabase`, `dotenv`, etc.) — nunca inlinar
+- **Bibliotecas padrão** (`asyncio`, `json`, `logging`, `os`, etc.) — nunca inlinar
+- **Módulos do grafo LangGraph** (`core/grafo.py`, `core/tools.py`, `core/prompts.py`) —
+  não inlinar. O job de disparo não roda o grafo; se precisar de algo do grafo, usar
+  import local dentro da função (ex: `from langchain_core.messages import AIMessage`)
+- **Import local** (dentro de função) é permitido para módulos pesados usados apenas em
+  um caminho raro (ex: `langchain_core` só no `buscar_historico`)
+
+#### Como marcar a origem de cada seção
+
+Cada bloco inlinado recebe um comentário-título com a origem:
+
+```python
+# Descrição da seção (antes em <arquivo_original>) — linha X até Y (não validado)
+```
+
+Exemplo:
+```python
+# Cliente Supabase singleton (antes em infra/supabase.py) — linha 68 até 90 (não validado)
+```
+
+Se a seção é código novo (não veio de outro arquivo), omitir `(antes em ...)`:
+```python
+# Mensagem que o cliente recebe no WhatsApp — linha 58 até 66 (não validado)
+```
+
+#### Selos iniciais
+
+- Todo código inlinado começa como `(não validado)` — quem valida é o humano
+- Imports e logging config recebem `(boilerplate, não requer validação)`
+- `if __name__ == "__main__"` recebe `(boilerplate, não requer validação)`
+
+#### Ordem das seções no arquivo consolidado
+
+1. **Docstring** — o que o job faz, escopo (só disparo, não inclui grafo), como rodar
+2. **Imports de bibliotecas** — padrão + terceiros (boilerplate)
+3. **Logging setup** (boilerplate)
+4. **Constantes** — inlinadas de `core/constants.py`, só as que o job usa
+5. **Templates de mensagem** — textos enviados ao cliente
+6. **Infraestrutura base** — Supabase client, event logger, registro de incidentes
+7. **Infraestrutura de comunicação** — Redis service, Leadbox client
+8. **Funções de dados** — upsert_lead, busca de histórico, persistência
+9. **Lógica de negócio** — query principal (buscar contratos/cobranças), montagem de mensagem
+10. **Orquestração** — função `run_*()` com lock Redis, loop e contadores
+11. **Processamento individual** — função `_processar_*()` com pausa, dedupe, contexto, envio
+12. **Módulos auxiliares** — context_detector, build_context_prompt (se usados)
+13. **`if __name__`** (boilerplate)
+
+#### Regras de qualidade
+
+- **Não alterar lógica** ao consolidar — copiar fielmente, ajustar apenas imports removidos
+- **Adaptar singletons** — se o original usa `from infra.supabase import get_supabase`,
+  a versão inline precisa declarar `_supabase_client` e a função `get_supabase()` no próprio arquivo
+- **Manter docstrings** das funções originais
+- **Adicionar ao docstring do arquivo** a lista de módulos inlinados para referência rápida
+- **Numerar as linhas nos títulos** após a consolidação final (quando o arquivo estiver completo)
+
 ## Arquivo em conferência atual
 
 - `jobs/manutencao_job.py` — em andamento (maioria validada, algumas seções pendentes)
