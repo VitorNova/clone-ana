@@ -53,10 +53,43 @@ Cada arquivo passa por revisão feita por um humano que usa o Claude Code como f
 Quando o usuário pedir para consolidar um braço para conferência, gerar um arquivo
 `jobs/<nome>_job.py` que reúna todo o código necessário num único arquivo.
 
+#### Passo-a-passo para levantar todas as dependências
+
+Antes de consolidar, é preciso mapear **tudo** que o braço usa. O procedimento:
+
+1. **Ponto de entrada** — identificar o arquivo principal do braço (ex: `jobs/billing_job.py`
+   antes de consolidar, ou o script que o PM2/cron chama)
+2. **Listar imports internos** — anotar todos os `from infra.X import Y` e
+   `from core.X import Z` do ponto de entrada. Esses são os **nível 1**
+3. **Expandir cada import nível 1** — abrir o arquivo-fonte (ex: `infra/leadbox_client.py`)
+   e ver o que **ele** importa de `core/` e `infra/`. Esses são **nível 2**
+4. **Repetir** até não haver mais imports internos (geralmente 2-3 níveis bastam)
+5. **Montar a lista final** — para cada arquivo-fonte, anotar quais funções/classes/constantes
+   serão copiadas. Formato sugerido:
+
+```
+infra/supabase.py       → get_supabase(), _supabase_client
+infra/leadbox_client.py → enviar_resposta_leadbox(), _mark_sent_by_ia(), _get_sync_redis()
+infra/event_logger.py   → log_event(), _rotate_events(), LOGS_DIR, EVENTS_FILE
+infra/incidentes.py     → registrar_incidente()
+infra/redis.py          → RedisService, get_redis_service()
+infra/nodes_supabase.py → upsert_lead(), salvar_mensagem(), buscar_historico(), salvar_mensagens_agente()
+core/constants.py       → TABLE_LEADS, TABLE_ASAAS_CLIENTES, TABLE_CONTRACT_DETAILS, ...
+core/context_detector.py→ detect_context(), build_context_prompt(), CONTEXT_MAPPING
+```
+
+6. **Checar chamadas internas entre funções** — ex: `enviar_resposta_leadbox()` chama
+   `_mark_sent_by_ia()` que chama `registrar_incidente()`. Todas precisam vir junto
+7. **Conferir constantes usadas por funções inlinadas** — ex: `registrar_incidente()` usa
+   `TABLE_INCIDENTES` e `get_supabase()`. Se a constante não está na lista, adicionar
+
+**Dica prática:** grep por `from infra` e `from core` recursivamente nos arquivos da lista.
+Se aparecer algo novo, adicionar e repetir.
+
 #### O que inlinar (copiar para dentro do arquivo)
 
-Inlinar **toda função, classe ou constante que o job usa diretamente** de `core/` e `infra/`.
-Para cada módulo importado pelo job, percorrer a árvore de dependências e trazer junto.
+Inlinar **toda função, classe ou constante que o job usa diretamente** de `core/` e `infra/`,
+**mais** tudo que essas funções usam internamente (dependências transitivas).
 Copiar apenas o que é usado — não copiar o módulo inteiro se só uma função é chamada.
 
 **Sempre inlinar:**
@@ -66,8 +99,33 @@ Copiar apenas o que é usado — não copiar o módulo inteiro se só uma funç�
 - Event logger e registro de incidentes
 - Funções de persistência usadas pelo job (upsert_lead, salvar_mensagem, etc.)
 - Context detector, se o job salva/lê contexto no histórico
+- **Dependências transitivas** — funções chamadas por funções inlinadas (ex: `_mark_sent_by_ia`
+  é chamada por `enviar_resposta_leadbox`, e `registrar_incidente` é chamada por `_mark_sent_by_ia`)
 
-**Regra geral:** se está em `infra/` ou `core/` e o job chama, inlinar.
+**Regra geral:** se está em `infra/` ou `core/` e o job chama (direta ou indiretamente), inlinar.
+
+#### Exemplo real: mapeamento do braço manutenção
+
+O job original (`jobs/manutencao_job.py` antes de consolidar) importava:
+
+```
+from infra.supabase import get_supabase          ← nível 1
+from infra.leadbox_client import enviar_resposta  ← nível 1
+from infra.redis import get_redis_service         ← nível 1
+from infra.event_logger import log_event          ← nível 1
+from infra.incidentes import registrar_incidente  ← nível 1
+from infra.nodes_supabase import upsert_lead, ... ← nível 1
+from core.constants import TABLE_LEADS, ...       ← nível 1
+from core.context_detector import detect_context  ← nível 1
+```
+
+Ao expandir nível 2:
+- `enviar_resposta_leadbox()` chama `_mark_sent_by_ia()` → chama `_get_sync_redis()` + `registrar_incidente()`
+- `registrar_incidente()` chama `get_supabase()` (já na lista)
+- `upsert_lead()` chama `get_supabase()` + `registrar_incidente()` (já na lista)
+- `log_event()` chama `_rotate_events()` (função interna do mesmo arquivo)
+
+Resultado: 6 arquivos de `infra/` + 2 de `core/` → tudo inlinado em `jobs/manutencao_job.py`.
 
 #### O que manter como import externo
 
