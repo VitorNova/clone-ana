@@ -105,3 +105,20 @@ Formato: data, problema/feature, solução, arquivos. Leia antes de qualquer tar
 - [ ] Aprovar templates de cobranca antes de validar billing_job em producao
 - [ ] Aprovar templates de manutencao antes de validar manutencao_job em producao
 - [ ] Migracao para gemini-2.5-flash (deadline 01/06/2026) — 3 regressoes de transferencia (R2, R6, X4). Baseline: `tests/results/all_20260410.json`
+
+---
+
+## Sessoes de Conferencia (Clone)
+
+### [15/04/2026] Sessao 1 — `jobs/manutencao_job.py`
+
+**Validado nesta sessao:**
+- Linha 42–56 — Constantes centralizadas (antes em `core/constants.py`)
+  - 4 tabelas conferidas no Supabase via MCP: `ana_leads`, `asaas_clientes`, `contract_details`, `ana_incidentes` — todas existem com colunas corretas
+  - Variáveis Leadbox confirmadas com agente de produção (anaproducao): valores reais vêm do `.env`
+  - Commit: `e32418a`
+
+**Pendente:**
+- Linha 58–66 — Template WhatsApp `(não validado)`
+- Linha 293–365 — Montagem da mensagem `(parcial: montagem mensagem não validado)`
+- Linha 367–405 — `run_manutencao()` `(não validado)`
